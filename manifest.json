@@ -1,0 +1,29 @@
+{
+    "manifest_version": 2,
+  
+    "name": "Intranet Tweaks",
+    "description": "Fixes small details in the CGS intranet",
+    "version": "1.1",
+  
+    "browser_action": {
+     "default_icon": "icon.png"
+    },
+    "content_scripts": [
+        {
+          "matches": ["https://intranet.cgs.vic.edu.au/Portal/", "https://intranet.cgs.vic.edu.au/CurriculumPortal/"],
+          "exclude_matches": ["https://intranet.cgs.vic.edu.au/CurriculumPortal/\\?*"],
+          "js": ["contentScript.js"],
+          "all_frames":true
+        }
+    ],
+    "background": {
+        "scripts": [
+            "background.js"
+        ],
+        "persistent": false
+    },
+    "permissions": [
+     "activeTab",
+     "https://portal.cgs.vic.edu.au/*"
+     ]
+  }
