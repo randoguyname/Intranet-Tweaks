@@ -69,3 +69,20 @@ chrome.runtime.sendMessage(
             sortTable(table);
         },100,new_iframe)
     });
+
+chrome.runtime.sendMessage(
+    {contentScriptQuery: "queryTimetableMusic"},
+    html => {
+        const parser = new DOMParser();
+        const htmlDocument = parser.parseFromString(html, "text/html");
+        table = htmlDocument.getElementsByTagName("table")[2];
+        table.width="100%";
+        table.tBodies[0].rows[1].cells[0].children[1].align="left";
+        spacer = table.insertRow(0);
+        spacer.style.height = "5px";
+        row = document.getElementsByTagName("table")[1].insertRow(1);
+        row.innerHTML = '<td></td><td><table width="100%"><tbody><tr><td width="5%"></td><td><div id="musicTimeTable"></div></td></tr></tbody></table><p></p></td>';
+        timetableDiv = document.getElementById("musicTimeTable");
+        timetableDiv.appendChild(table);
+    }
+)
