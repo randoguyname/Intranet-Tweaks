@@ -43,8 +43,8 @@ function fixPeriodNumbers() {
     rows = document.getElementsByTagName("table")[3].tBodies[0].rows // Gets all rows in the timetable
     arr = [].slice.call(rows, 1); // Removes the "Pastoral" period, which is not numbered
 
-    for (var row in arr) {
-        number = arr[elem].cells[0]; // Gets the first cell, which contains the period number
+    for (var row of arr) {
+        number = row.cells[0]; // Gets the first cell, which contains the period number
         number.innerText = parseInt(number.innerText)-1 // Replaces the text with the number minus one
     }
 }
@@ -94,7 +94,10 @@ function appendMusicTimetable() {
             spacer.style.height = "5px";
 
             row = document.getElementsByTagName("table")[1].insertRow(1); // Add a space below the timetable for our music timetable
-            timetableCell = row.insertCell(0); // Cell to contain the timetable
+
+            paddingCell = row.insertCell(0); // add a cell to pad
+
+            timetableCell = row.insertCell(1); // Cell to contain the timetable
             timetableCell.width = "100%"; // Make cell full width
 
             timetableDiv = document.createElement("div"); // Create div to hold music timetable
