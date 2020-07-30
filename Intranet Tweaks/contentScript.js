@@ -1,88 +1,129 @@
-d = document;
+// Necessary Functions
 
-elems = d.getElementsByClassName("timetable-background")[0].children[1].children[1].children
-arr = [].slice.call(elems,1);
+function getMinutesFromTime() {
+    if ((time.endsWith("AM") && !time.startsWith("12")) 
+            || (time.startsWith("12") && time.endsWith("PM"))) { // if the time is AM (or 12 PM)
+        time = time.slice(0,-3) // Remove AM or PM, leaving "11:05"
+        time = (parseInt(time) * 60) + parseInt(time.slice(3)) // Calculate number of minutes since the beginning of the day
+    }
 
-function sortTable(table) {
-    rows = [].slice.call(table.rows,1);
-    toprow = table.rows[0]
-    rows1 = []
-    rows2 = []
-    for (row in rows) {
-        row = rows[row]
-        time = row.cells[0].innerText;
-        if (time.endsWith("AM") || time.startsWith("12")) {
-            time = time.slice(0,-3)
-            time = (parseInt(time) * 60) + parseInt(time.slice(3))
+    else if ((time.endsWith("PM") && !time.startsWith("12")) 
+                || (time.startsWith("12") && time.endsWith("AM"))) { // if time is PM (or 12 AM)
+        time = time.slice(0,-3) // Remove AM or PM, leaving "11:05"
+        time = ((parseInt(time)+12) * 60) + parseInt(time.slice(3)) // Calculate number of minutes since the beginning of the day
+    }
+    return time;
+}
+
+function sortTable(table) { // Sort table by time
+    rows = [].slice.call(table.rows,1); // Get all rows apart from the top row, which contains no meetings
+    toprow = table.rows[0]; // Save this for later
+    rows1 = []; // Initialise arrays for later
+    rows2 = [];
+
+    for (row of rows) { // iterate all meetings
+        time = row.cells[0].innerText; // Store the time as text, eg. "11:05 AM"
+        time = getMinutesFromTime(time); // Calculate minutes since beginning of day (00:00)
+        rows1.push(time); // Add that amount to an array
+    }
+    rows12 = rows1.slice(0).sort() // Make a copy of that arry that is in order from smallest to largest
+    for (row of rows12) { // iterate the sortetd array
+        rows2.push(rows[rows1.indexOf(row)]) // Find the index of the iterated value in the original array, then correlate that index to the collection of rows
+    }
+    table.tBodies[0].innerHTML = ''; // Clear table
+    table.tBodies[0].appendChild(toprow); // Add top row to the top
+    for (row of rows2) {
+        table.tBodies[0].appendChild(row); // Add next row to the bottom
+    }
+}
+
+// Features
+
+function fixPeriodNumbers() {
+    rows = document.getElementsByTagName("table")[3].tBodies[0].rows // Gets all rows in the timetable
+    arr = [].slice.call(rows, 1); // Removes the "Pastoral" period, which is not numbered
+
+    for (var row in arr) {
+        number = arr[elem].cells[0]; // Gets the first cell, which contains the period number
+        number.innerText = parseInt(number.innerText)-1 // Replaces the text with the number minus one
+    }
+}
+
+function orderZoomMeetings() {
+    iframe_parent = document.getElementById("holds-the-iframe"); // Get the parent of the iframe
+    iframe = iframe_parent.children[0]; // Get the iframe
+    new_iframe = document.createElement("iframe"); // Create a replacement iframe
+
+    userId = /scheduled\.php\?u=(\d+)/g.exec(iframe.src)[1]; // Extract the "userId" from the iframes src url
+
+    new_iframe.height = iframe.height; // Style the iframe
+    new_iframe.width = iframe.width;
+    new_iframe.frameBorder = iframe.frameBorder;
+
+    iframe_parent.removeChild(iframe); // Replace the existing iframe with our new one
+    iframe_parent.appendChild(new_iframe);
+
+    chrome.runtime.sendMessage(
+        {contentScriptQuery: "queryMeetings", userId: userId}, // Send message to backend script, 
+                                                               // tell it to retrieve the url for the iframe
+        html => {
+            new_iframe.contentDocument.write(html); // Write the html to out new iframe
+            iframe_parent.style.backgroundImage = "none"; // Hide the loading gif
+            setTimeout(function (frame){ // Ensure iframe is loaded (maybe redundant)
+                table = frame.contentDocument.getElementsByTagName("table")[0]; // Get the table of meetings
+                sortTable(table); // Sort the table
+            },100,new_iframe)
         }
-        else if (time.endsWith("PM")) {
-            time = time.slice(0,-3)
-            time = ((parseInt(time)+12) * 60) + parseInt(time.slice(3))
+    );
+}
+
+
+function appendMusicTimetable() {
+    chrome.runtime.sendMessage(
+        {contentScriptQuery: "queryTimetableMusic"},
+        html => {
+            parser = new DOMParser(); // Initialise a DOM parser
+            musicDocument = parser.parseFromString(html, "text/html"); // Turn HTML text into DOM Document
+
+            table = musicDocument.getElementsByTagName("table")[2]; // Locate the main part of the music timetable
+
+            table.width="100%";                                 // Styling
+            table.rows[1].cells[0].children[1].align="left";
+
+            spacer = table.insertRow(0); // Add vertical spacer between timtable and music timetable
+            spacer.style.height = "5px";
+
+            row = document.getElementsByTagName("table")[1].insertRow(1); // Add a space below the timetable for our music timetable
+            timetableCell = row.insertCell(0); // Cell to contain the timetable
+            timetableCell.width = "100%"; // Make cell full width
+
+            timetableDiv = document.createElement("div"); // Create div to hold music timetable
+            timetableDiv.id = "musicTimeTable"; // Give it an id
+
+            timetableDiv.style.width = "95%";     // Arrange so it is in line with the timetable
+            timetableDiv.style.marginLeft = "5%";
+
+            timetableDiv.appendChild(table);        // Add to document
+            timetableCell.appendChild(timetableDiv);
         }
-        rows1.push(time)
-    }
-    rows12 = rows1.slice(0).sort()
-    for (row in rows12) {
-        row = rows12[row]
-        rows2.push(rows[rows1.indexOf(row)])
-    }
-    table.tBodies[0].innerHTML = '';
-    table.tBodies[0].appendChild(toprow);
-    for (row in rows2) {
-        row = rows2[row]
-        table.tBodies[0].appendChild(row);
-    }
+    )
 }
 
-for (var elem in arr) {
-    field = arr[elem].children[0];
-    field.innerText = parseInt(field.innerText)-1
-}
 
-function httpGetAsync(theUrl, callback)
-{
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.onreadystatechange = function() { 
-        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
-            callback(xmlHttp.responseText);
+chrome.storage.local.get(['doFixPeriodNumbers'], function (doFixPeriodNumbers) { // If the "fixPeriodNumbers" feature is enabled, use it
+    if (doFixPeriodNumbers) {
+        fixPeriodNumbers();
     }
-    xmlHttp.open("GET", theUrl, true); // true for asynchronous 
-    xmlHttp.send(null);
-}
+});
 
-iframe_parent = d.getElementById("holds-the-iframe");
-iframe = iframe_parent.children[0];
-new_iframe = d.createElement("iframe");
-userId = /scheduled\.php\?u=(\d+)/g.exec(iframe.src)[1];
-new_iframe.height = iframe.height;
-new_iframe.width = iframe.width;
-new_iframe.frameBorder = iframe.frameBorder;
-iframe_parent.removeChild(iframe);
-iframe_parent.appendChild(new_iframe);
-
-chrome.runtime.sendMessage(
-    {contentScriptQuery: "queryMeetings", userId: userId},
-    html => {new_iframe.contentWindow.document.write(html); 
-        iframe_parent.style.backgroundImage = "none";
-        setTimeout(function (frame){
-            table = frame.contentWindow.document.getElementsByTagName("table")[0];
-            sortTable(table);
-        },100,new_iframe)
-    });
-
-chrome.runtime.sendMessage(
-    {contentScriptQuery: "queryTimetableMusic"},
-    html => {
-        const parser = new DOMParser();
-        const htmlDocument = parser.parseFromString(html, "text/html");
-        table = htmlDocument.getElementsByTagName("table")[2];
-        table.width="100%";
-        table.tBodies[0].rows[1].cells[0].children[1].align="left";
-        spacer = table.insertRow(0);
-        spacer.style.height = "5px";
-        row = document.getElementsByTagName("table")[1].insertRow(1);
-        row.innerHTML = '<td></td><td><table width="100%"><tbody><tr><td width="5%"></td><td><div id="musicTimeTable"></div></td></tr></tbody></table><p></p></td>';
-        timetableDiv = document.getElementById("musicTimeTable");
-        timetableDiv.appendChild(table);
+chrome.storage.local.get(['doOrderZoomMeetings'], function (doOrderZoomMeetings) { // If the "orderZoomMeetings" feature is enabled, use it
+    if (doOrderZoomMeetings) {
+        orderZoomMeetings();
     }
-)
+});
+
+chrome.storage.local.get(['doAppendMusicTimetable'], function (doAppendMusicTimetable) { // If the "doAppendMusicTimetable" feature is enabled, use it
+    if (doAppendMusicTimetable) {
+        appendMusicTimetable();
+    }
+});
