@@ -113,6 +113,8 @@ function appendMusicTimetable() {
 }
 
 
+// Runtime
+
 chrome.storage.local.get(['doFixPeriodNumbers'], function (doFixPeriodNumbers) { // If the "fixPeriodNumbers" feature is enabled, use it
     if (doFixPeriodNumbers) {
         fixPeriodNumbers();
