@@ -1,8 +1,9 @@
 chrome.runtime.onInstalled.addListener( // When the shortcut is first run
     function (details) {
-        chrome.storage.local.set({"doFixPeriodNumbers":true}) // Set presets for settings
-        chrome.storage.local.set({"doOrderZoomMeetings":true})
-        chrome.storage.local.set({"doAppendMusicTimetable":true})
+        chrome.storage.local.set({"doFixPeriodNumbers":true, // Set presets for settings
+                                  "doSeperateTimetableBreaks":true,
+                                  "doOrderZoomMeetings":true,
+                                  "doAppendMusicTimetable":false}) 
     }
 )
 

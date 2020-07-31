@@ -49,6 +49,31 @@ function fixPeriodNumbers() {
     }
 }
 
+function seperateTimetableBreaks() {
+    tBody = document.getElementsByTagName("table")[3].tBodies[0] // Gets the timetable
+    
+    // Break for Recess
+    recessBreak = tBody.insertRow(4);  // Insert row
+    recessCell = recessBreak.insertCell(0); // Make cell to say "Recess"
+    recessCell.innerText = "Recess"
+    recessCell.style.textAlign = "center" // Align text to center
+    recessCell.colSpan = 5 // Fill all five columns
+    recessLeftCell = recessBreak.insertCell(0); // move to the right
+    recessLeftCell.style.borderRight = "none"; // Get rid of boundry between two cells
+    recessCell.style.borderLeft = "none";
+
+    // Break for Lunch
+    lunchBreak = tBody.insertRow(7);  // Insert row
+    lunchCell = lunchBreak.insertCell(0); // Make cell to say "Lunch"
+    lunchCell.innerText = "Lunch"
+    lunchCell.style.textAlign = "center" // Align text to center
+    lunchCell.colSpan = 5 // Fill all five columns
+    lunchLeftCell = lunchBreak.insertCell(0); // move to the right
+    lunchLeftCell.style.borderRight = "none"; // Get rid of boundry between two cells
+    lunchCell.style.borderLeft = "none";
+
+}
+
 function orderZoomMeetings() {
     iframe_parent = document.getElementById("holds-the-iframe"); // Get the parent of the iframe
     iframe = iframe_parent.children[0]; // Get the iframe
@@ -76,7 +101,6 @@ function orderZoomMeetings() {
         }
     );
 }
-
 
 function appendMusicTimetable() {
     chrome.runtime.sendMessage(
@@ -115,7 +139,7 @@ function appendMusicTimetable() {
 
 // Runtime
 
-chrome.storage.local.get(["doFixPeriodNumbers", "doOrderZoomMeetings", "doAppendMusicTimetable"], function (response) {
+chrome.storage.local.get(["doFixPeriodNumbers", "doSeperateTimetableBreaks", "doOrderZoomMeetings", "doAppendMusicTimetable"], function (response) {
     if (response.doFixPeriodNumbers) {
         fixPeriodNumbers();
     }
@@ -126,5 +150,8 @@ chrome.storage.local.get(["doFixPeriodNumbers", "doOrderZoomMeetings", "doAppend
 
     if (response.doAppendMusicTimetable) {
         appendMusicTimetable();
+    }
+    if (response.doSeperateTimetableBreaks) {
+        seperateTimetableBreaks();
     }
 })
