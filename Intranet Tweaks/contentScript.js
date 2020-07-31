@@ -115,20 +115,16 @@ function appendMusicTimetable() {
 
 // Runtime
 
-chrome.storage.local.get(['doFixPeriodNumbers'], function (doFixPeriodNumbers) { // If the "fixPeriodNumbers" feature is enabled, use it
-    if (doFixPeriodNumbers) {
+chrome.storage.local.get(["doFixPeriodNumbers", "doOrderZoomMeetings", "doAppendMusicTimetable"], function (response) {
+    if (response.doFixPeriodNumbers) {
         fixPeriodNumbers();
     }
-});
 
-chrome.storage.local.get(['doOrderZoomMeetings'], function (doOrderZoomMeetings) { // If the "orderZoomMeetings" feature is enabled, use it
-    if (doOrderZoomMeetings) {
+    if (response.doOrderZoomMeetings) {
         orderZoomMeetings();
     }
-});
 
-chrome.storage.local.get(['doAppendMusicTimetable'], function (doAppendMusicTimetable) { // If the "doAppendMusicTimetable" feature is enabled, use it
-    if (doAppendMusicTimetable) {
+    if (response.doAppendMusicTimetable) {
         appendMusicTimetable();
     }
-});
+})

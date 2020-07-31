@@ -1,8 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap');
 .background {
     background-color:#00063E; 
     height:300px; 
     width:400px; 
+    margin: 0px;
 }
 
 .fill {
@@ -10,12 +11,66 @@
     height: 100%;
 }
 
-.padded {
-    padding: 2px 2px;
-}
-
 p {
     color: white;
     font-family: 'Roboto', sans-serif;
     margin: 0px;
 }
+
+.roboto {
+    font-family: 'Roboto', sans-serif;
+    color: white;
+}
+
+
+/*------  CHECKLIST  -------*/
+
+
+/* Remove margins and padding from the list */
+ul {
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Style the list items */
+  ul li {
+    cursor: pointer;
+    position: relative;
+    padding: 12px 8px 12px 40px;
+    list-style-type: none;
+    background: #ffffff00;
+    font-size: 18px;
+    transition: 0.2s;
+    color:white;
+    
+    /* make the list items unselectable */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  
+  
+  /* Lighter background-color on hover */
+  ul li:hover {
+    background: #ffffff22;
+  }
+  
+  /* When clicked on, add a lighter background color*/
+  ul li.checked {
+    background: #ffffff33;
+  }
+  
+  /* Add a "checked" mark when clicked on */
+  ul li.checked::before {
+    content: '';
+    position: absolute;
+    border-color: #fff;
+    border-style: solid;
+    border-width: 0 2px 2px 0;
+    top: 10px;
+    left: 16px;
+    transform: rotate(45deg);
+    height: 15px;
+    width: 7px;
+  }
