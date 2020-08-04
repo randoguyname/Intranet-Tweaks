@@ -37,6 +37,55 @@ function sortTable(table) { // Sort table by time
     }
 }
 
+function parseDayIndex(text) {
+    if (text.length < 3) {
+        return;
+    }
+    days = { // Turn days to numbers
+        "monday":    1,
+        "tuesday":   2,
+        "wednesday": 3,
+        "thursday":  4,
+        "friday":    5,
+    }
+    if (days[(dayName = text.split(',')[0].toLowerCase())] != undefined) { // Check if day is in days
+        return days[dayName]; // Return day index
+    }
+}
+
+function parsePeriodIndex(text, doSeperateTimetableBreaks=false) {
+    periodMapsTimetableBreaks = { // If timetable breaks is on, use this to calculate period indexes
+        1: 1,
+        2: 2,
+        3: 3, // Recess
+        4: 5,
+        5: 6, // Lunch
+        6: 8,
+        7: 9,
+        8: 10
+    }
+    if (text.length < 3) {
+        return;
+    }
+    if (groups = (/P(\d).*/g).exec(text)) { // Use regex to get period of lesson
+        // Return Period Index, put through mapping if necassary
+        if (!doSeperateTimetableBreaks) return groups.flat().pop(); else return periodMapsTimetableBreaks[groups.pop()]; 
+    }
+}
+
+function highlightMusicCells(timetable, musicLessons, backgroundColor) {
+    musicLessonIds = ["mus", "mub", "mut"] // Possible text "id"s of lessons that show up on both the regular and music timetable
+
+    for (musicLesson of musicLessons) { // Iterate all music lessons
+        timetableLessonCell = timetable.rows[musicLesson[0]].cells[musicLesson[1]]; // Cell for lesson marked on timetable
+        timetableLesson = timetableLessonCell.innerText.split('-')[0] // Gets the text "id" for the lesson
+
+        if (!musicLessonIds.includes(timetableLesson.toLowerCase())) { // If music lesson is not marked on regular timetable
+            timetableLessonCell.style.backgroundColor = backgroundColor // Change background color
+        }
+    }
+}
+
 // Features
 
 function fixPeriodNumbers() {
@@ -54,6 +103,7 @@ function seperateTimetableBreaks() {
     
     // Break for Recess
     recessBreak = tBody.insertRow(4);  // Insert row
+    recessBreak.style.backgroundColor = "#ded"; // Darken Background
     recessCell = recessBreak.insertCell(0); // Make cell to say "Recess"
     recessCell.innerText = "Recess"
     recessCell.style.textAlign = "center" // Align text to center
@@ -64,6 +114,7 @@ function seperateTimetableBreaks() {
 
     // Break for Lunch
     lunchBreak = tBody.insertRow(7);  // Insert row
+    lunchBreak.style.backgroundColor = "#cdc"; // Darken Background
     lunchCell = lunchBreak.insertCell(0); // Make cell to say "Lunch"
     lunchCell.innerText = "Lunch"
     lunchCell.style.textAlign = "center" // Align text to center
@@ -72,6 +123,41 @@ function seperateTimetableBreaks() {
     lunchLeftCell.style.borderRight = "none"; // Get rid of boundry between two cells
     lunchCell.style.borderLeft = "none";
 
+}
+
+function highlightMusicLessons() { 
+    chrome.runtime.sendMessage(
+        {contentScriptQuery: "queryTimetableMusic"},
+        function (html) {
+            chrome.storage.local.get(['doSeperateTimetableBreaks', 'highlightMusicLessonsColor'], function (response) {
+                parser = new DOMParser(); // Initialise a DOM parser
+                musicDocument = parser.parseFromString(html, "text/html"); // Turn HTML text into DOM Document
+
+                musicLessonsRows = musicDocument.getElementsByTagName("table")[2].rows[1].cells[0].children[1].rows; // Locate the main part of the music timetable, that contains the lesson times
+
+                musicLessons = []; // All music lessons on your music timetable
+                atLessons = false; // If at the point in the document when lessons occur
+                parsingDay = 1; // The day of the lesson, ie. 1=Monday, 2=Tuesday, etc.
+                for (lesson of musicLessonsRows) {
+                    if (atLessons) { // If passed point of music lessons
+                        if (dayIndex = parseDayIndex(lesson.innerText)) {
+                            parsingDay = dayIndex
+                        }
+                        else if (periodIndex = parsePeriodIndex(lesson.innerText, response.doSeperateTimetableBreaks)) {
+                            musicLessons.push([periodIndex, parsingDay])
+                        }
+                    }
+                    if (lesson.innerText.startsWith("My Timetable")) { // If at point of music lessons
+                        atLessons = true; // Allow the rest of the code to run
+                    }
+                }
+                
+                timetable = document.getElementsByTagName("table")[3].tBodies[0] // Get the timetable
+                
+                highlightMusicCells(timetable, musicLessons, response.highlightMusicLessonsColor)
+            })
+        }
+    )
 }
 
 function orderZoomMeetings() {
@@ -139,7 +225,7 @@ function appendMusicTimetable() {
 
 // Runtime
 
-chrome.storage.local.get(["doFixPeriodNumbers", "doSeperateTimetableBreaks", "doOrderZoomMeetings", "doAppendMusicTimetable"], function (response) {
+chrome.storage.local.get(["doFixPeriodNumbers", "doSeperateTimetableBreaks", "doOrderZoomMeetings", "doAppendMusicTimetable", "doHighlightMusicLessons"], function (response) {
     if (response.doFixPeriodNumbers) {
         fixPeriodNumbers();
     }
@@ -153,5 +239,9 @@ chrome.storage.local.get(["doFixPeriodNumbers", "doSeperateTimetableBreaks", "do
     }
     if (response.doSeperateTimetableBreaks) {
         seperateTimetableBreaks();
+    }
+
+    if (response.doHighlightMusicLessons) {
+        highlightMusicLessons();
     }
 })

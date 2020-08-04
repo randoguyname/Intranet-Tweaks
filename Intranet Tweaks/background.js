@@ -3,7 +3,9 @@ chrome.runtime.onInstalled.addListener( // When the shortcut is first run
         chrome.storage.local.set({"doFixPeriodNumbers":true, // Set presets for settings
                                   "doSeperateTimetableBreaks":true,
                                   "doOrderZoomMeetings":true,
-                                  "doAppendMusicTimetable":false}) 
+                                  "doAppendMusicTimetable":false,
+                                  "doHighlightMusicLessons":true,
+                                  "highlightMusicLessonsColor":"#efc537ad"}) 
     }
 )
 

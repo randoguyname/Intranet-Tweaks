@@ -2,15 +2,17 @@
 function presetChecklist() {
     var list = document.getElementById('myUL');
     console.log(list.children);//temp
-    chrome.storage.local.get(["doFixPeriodNumbers", "doOrderZoomMeetings", "doAppendMusicTimetable", "doSeperateTimetableBreaks"], function (response) {
+    chrome.storage.local.get(["doFixPeriodNumbers", "doOrderZoomMeetings", "doAppendMusicTimetable", "doSeperateTimetableBreaks", "doHighlightMusicLessons"], function (response) {
         doFixPeriodNumbers = response.doFixPeriodNumbers;
         doSeperateTimetableBreaks = response.doSeperateTimetableBreaks;
         doOrderZoomMeetings = response.doOrderZoomMeetings;
         doAppendMusicTimetable = response.doAppendMusicTimetable;
+        doHighlightMusicLessons = response.doHighlightMusicLessons;
         if (doFixPeriodNumbers) {document.querySelector("[intranetfeatureid=doFixPeriodNumbers]").classList.add("checked")};
         if (doOrderZoomMeetings) {document.querySelector("[intranetfeatureid=doOrderZoomMeetings]").classList.add("checked")};
         if (doAppendMusicTimetable) {document.querySelector("[intranetfeatureid=doAppendMusicTimetable]").classList.add("checked")};
         if (doSeperateTimetableBreaks) {document.querySelector("[intranetfeatureid=doSeperateTimetableBreaks]").classList.add("checked")};
+        if (doHighlightMusicLessons) {document.querySelector("[intranetfeatureid=doHighlightMusicLessons]").classList.add("checked")};
     })
 
 }
