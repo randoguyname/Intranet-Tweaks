@@ -114,7 +114,7 @@ function seperateTimetableBreaks() {
 
     // Break for Lunch
     lunchBreak = tBody.insertRow(7);  // Insert row
-    lunchBreak.style.backgroundColor = "#cdc"; // Darken Background
+    lunchBreak.style.backgroundColor = "#ded"; // Darken Background
     lunchCell = lunchBreak.insertCell(0); // Make cell to say "Lunch"
     lunchCell.innerText = "Lunch"
     lunchCell.style.textAlign = "center" // Align text to center
