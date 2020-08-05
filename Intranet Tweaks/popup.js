@@ -2,7 +2,7 @@
 function presetChecklist() {
     var list = document.getElementById('myUL');
     console.log(list.children);//temp
-    chrome.storage.local.get(["doFixPeriodNumbers", "doOrderZoomMeetings", "doAppendMusicTimetable", "doSeperateTimetableBreaks", "doHighlightMusicLessons"], function (response) {
+    chrome.storage.sync.get(["doFixPeriodNumbers", "doOrderZoomMeetings", "doAppendMusicTimetable", "doSeperateTimetableBreaks", "doHighlightMusicLessons"], function (response) {
         doFixPeriodNumbers = response.doFixPeriodNumbers;
         doSeperateTimetableBreaks = response.doSeperateTimetableBreaks;
         doOrderZoomMeetings = response.doOrderZoomMeetings;
@@ -24,7 +24,7 @@ function checklistChecked() {
     if (ev.target.tagName === 'LI') {
         ev.target.classList.toggle('checked');
         featureId = ev.target.attributes["intranetfeatureid"].value
-        chrome.storage.local.set({[featureId]:ev.target.classList.contains("checked")})
+        chrome.storage.sync.set({[featureId]:ev.target.classList.contains("checked")})
         }
     }, false);
 }

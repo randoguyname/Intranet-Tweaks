@@ -129,7 +129,7 @@ function highlightMusicLessons() {
     chrome.runtime.sendMessage(
         {contentScriptQuery: "queryTimetableMusic"},
         function (html) {
-            chrome.storage.local.get(['doSeperateTimetableBreaks', 'highlightMusicLessonsColor'], function (response) {
+            chrome.storage.sync.get(['doSeperateTimetableBreaks', 'highlightMusicLessonsColor'], function (response) {
                 parser = new DOMParser(); // Initialise a DOM parser
                 musicDocument = parser.parseFromString(html, "text/html"); // Turn HTML text into DOM Document
 
@@ -225,7 +225,7 @@ function appendMusicTimetable() {
 
 // Runtime
 
-chrome.storage.local.get(["doFixPeriodNumbers", "doSeperateTimetableBreaks", "doOrderZoomMeetings", "doAppendMusicTimetable", "doHighlightMusicLessons"], function (response) {
+chrome.storage.sync.get(["doFixPeriodNumbers", "doSeperateTimetableBreaks", "doOrderZoomMeetings", "doAppendMusicTimetable", "doHighlightMusicLessons"], function (response) {
     if (response.doFixPeriodNumbers) {
         fixPeriodNumbers();
     }

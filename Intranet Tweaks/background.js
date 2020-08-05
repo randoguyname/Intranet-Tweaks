@@ -1,11 +1,20 @@
 chrome.runtime.onInstalled.addListener( // When the shortcut is first run
     function (details) {
-        chrome.storage.local.set({"doFixPeriodNumbers":true, // Set presets for settings
-                                  "doSeperateTimetableBreaks":true,
-                                  "doOrderZoomMeetings":true,
-                                  "doAppendMusicTimetable":false,
-                                  "doHighlightMusicLessons":true,
-                                  "highlightMusicLessonsColor":"#efc537ad"}) 
+        chrome.storage.sync.get(["doFixPeriodNumbers", 
+                                "doSeperateTimetableBreaks", 
+                                "doOrderZoomMeetings", 
+                                "doAppendMusicTimetable", 
+                                "doHighlightMusicLessons", 
+                                "highlightMusicLessonsColor"], function (response) {
+
+            chrome.storage.sync.set({"doFixPeriodNumbers": (((doFixPeriodNumbers = response.doFixPeriodNumbers) != undefined) ? doFixPeriodNumbers : true), // Set presets for settings
+                                  "doSeperateTimetableBreaks": (((doSeperateTimetableBreaks = response.doSeperateTimetableBreaks) != undefined) ? doSeperateTimetableBreaks : true),
+                                  "doOrderZoomMeetings": (((doOrderZoomMeetings = response.doOrderZoomMeetings) != undefined) ? doOrderZoomMeetings : true),
+                                  "doAppendMusicTimetable": (((doAppendMusicTimetable = response.doAppendMusicTimetable) != undefined) ? doAppendMusicTimetable : false),
+                                  "doHighlightMusicLessons": (((doHighlightMusicLessons = response.doHighlightMusicLessons) != undefined) ? doHighlightMusicLessons : true),
+                                  "highlightMusicLessonsColor": (((highlightMusicLessonsColor = response.highlightMusicLessonsColor) != undefined) ? highlightMusicLessonsColor : "#efc537ad")}) 
+            }
+        )
     }
 )
 
