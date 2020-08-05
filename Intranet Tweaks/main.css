@@ -23,9 +23,16 @@ p {
 .copyright {
     margin: 3 5;
     font-family: Arial, Helvetica, sans-serif;
-    text-align: right;
+    text-align: center;
     font-weight: lighter;
     font-size: 120%;
+    opacity: 50%;
+}
+
+.copysymbol {
+    font-size: 60% !important;
+    vertical-align: text-top !important;
+    padding-left: 1.2px;
 }
 
 /*------  CHECKLIST  -------*/
