@@ -49,10 +49,10 @@ function parseDayIndex(text) {
         "friday":    5,
     }
     if (days[(dayName = text.split(',')[0].toLowerCase())] != undefined) { // Check if day is in days
-        return days[dayName]; // Return day index
+        return [days[dayName]]; // Return day index
     }
-    else if (text.startswith("Lunch")) {
-        return 1;
+    else if (text.startsWith("Lunch")) {
+        return [0,1];
     }
 }
 
@@ -75,10 +75,10 @@ function parsePeriodIndex(text, doSeperateTimetableBreaks=false) {
         if (!doSeperateTimetableBreaks) return groups.flat().pop(); else return periodMapsTimetableBreaks[groups.pop()]; 
     }
     else if (doSeperateTimetableBreaks) {
-        if (text.startswith("Lunch")) {
+        if (text.startsWith("Lunch")) {
             return 4;
         }
-        else if (text.startswith("Lunch")) {
+        else if (text.startsWith("Lunch")) {
             return 7;
         }
     }
@@ -148,14 +148,16 @@ function highlightMusicLessons() {
 
                 musicLessons = []; // All music lessons on your music timetable
                 atLessons = false; // If at the point in the document when lessons occur
-                parsingDay = 1; // The day of the lesson, ie. 1=Monday, 2=Tuesday, etc.
+                parsingDays = [1]; // The day of the lesson, ie. 1=Monday, 2=Tuesday, etc.
                 for (lesson of musicLessonsRows) {
                     if (atLessons) { // If passed point of music lessons
-                        if (dayIndex = parseDayIndex(lesson.innerText)) {
-                            parsingDay = dayIndex
+                        if (dayIndices = parseDayIndex(lesson.innerText)) {
+                            parsingDays = dayIndices;
                         }
                         else if (periodIndex = parsePeriodIndex(lesson.innerText, response.doSeperateTimetableBreaks)) {
-                            musicLessons.push([periodIndex, parsingDay])
+                            for (day of parsingDays) {
+                                musicLessons.push([periodIndex, day]);
+                            }
                         }
                     }
                     if (lesson.innerText.startsWith("My Timetable")) { // If at point of music lessons
