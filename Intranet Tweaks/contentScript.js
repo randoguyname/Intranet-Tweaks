@@ -51,6 +51,9 @@ function parseDayIndex(text) {
     if (days[(dayName = text.split(',')[0].toLowerCase())] != undefined) { // Check if day is in days
         return days[dayName]; // Return day index
     }
+    else if (text.startswith("Lunch")) {
+        return 1;
+    }
 }
 
 function parsePeriodIndex(text, doSeperateTimetableBreaks=false) {
