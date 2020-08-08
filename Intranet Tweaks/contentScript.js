@@ -71,6 +71,14 @@ function parsePeriodIndex(text, doSeperateTimetableBreaks=false) {
         // Return Period Index, put through mapping if necassary
         if (!doSeperateTimetableBreaks) return groups.flat().pop(); else return periodMapsTimetableBreaks[groups.pop()]; 
     }
+    else if (doSeperateTimetableBreaks) {
+        if (text.startswith("Lunch")) {
+            return 4;
+        }
+        else if (text.startswith("Lunch")) {
+            return 7;
+        }
+    }
 }
 
 function highlightMusicCells(timetable, musicLessons, backgroundColor) {
@@ -98,12 +106,12 @@ function fixPeriodNumbers() {
     }
 }
 
-function seperateTimetableBreaks() {
+function seperateTimetableBreaks(highlightTimetableBreaks) {
     tBody = document.getElementsByTagName("table")[3].tBodies[0] // Gets the timetable
     
     // Break for Recess
     recessBreak = tBody.insertRow(4);  // Insert row
-    recessBreak.style.backgroundColor = "#ded"; // Darken Background
+    recessBreak.style.backgroundColor = highlightTimetableBreaks; // Highlight Background
     recessCell = recessBreak.insertCell(0); // Make cell to say "Recess"
     recessCell.innerText = "Recess"
     recessCell.style.textAlign = "center" // Align text to center
@@ -114,7 +122,7 @@ function seperateTimetableBreaks() {
 
     // Break for Lunch
     lunchBreak = tBody.insertRow(7);  // Insert row
-    lunchBreak.style.backgroundColor = "#ded"; // Darken Background
+    lunchBreak.style.backgroundColor = highlightTimetableBreaks; // Highlight Background
     lunchCell = lunchBreak.insertCell(0); // Make cell to say "Lunch"
     lunchCell.innerText = "Lunch"
     lunchCell.style.textAlign = "center" // Align text to center
@@ -225,7 +233,7 @@ function appendMusicTimetable() {
 
 // Runtime
 
-chrome.storage.sync.get(["doFixPeriodNumbers", "doSeperateTimetableBreaks", "doOrderZoomMeetings", "doAppendMusicTimetable", "doHighlightMusicLessons"], function (response) {
+chrome.storage.sync.get(["doFixPeriodNumbers", "doSeperateTimetableBreaks", "highlightTimetableBreaks", "doOrderZoomMeetings", "doAppendMusicTimetable", "doHighlightMusicLessons"], function (response) {
     if (response.doFixPeriodNumbers) {
         fixPeriodNumbers();
     }
@@ -238,7 +246,7 @@ chrome.storage.sync.get(["doFixPeriodNumbers", "doSeperateTimetableBreaks", "doO
         appendMusicTimetable();
     }
     if (response.doSeperateTimetableBreaks) {
-        seperateTimetableBreaks();
+        seperateTimetableBreaks(response.highlightTimetableBreaks);
     }
 
     if (response.doHighlightMusicLessons) {

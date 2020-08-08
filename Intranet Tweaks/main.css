@@ -35,6 +35,29 @@ p {
     padding-left: 1.2px;
 }
 
+.rightChecklistInput {
+    float: right;
+    height: max-content;
+}
+
+input[type="text"] {
+    height: fit-content()
+}
+
+td {
+    font-size:18px
+}
+
+.rightTable {
+    width: 8%;
+}
+
+.colorSelect {
+    background-color: #fff;
+    width: 16px;
+    height: 16px;
+}
+
 /*------  CHECKLIST  -------*/
 
 
