@@ -35,6 +35,46 @@ p {
     padding-left: 1.2px;
 }
 
+<<<<<<< Updated upstream:Intranet Tweaks/main.css
+=======
+.rightChecklistInput {
+    float: right;
+    height: max-content;
+}
+
+input[type="text"] {
+    height: fit-content()
+}
+
+td {
+    font-size:18px
+}
+
+.rightTable {
+    width: 8%;
+}
+
+.colorSelect {
+    background-color: #fff;
+    width: 16px;
+    height: 16px;
+}
+
+.rightArrow {
+    content: '';
+    height: 16px;
+    width: 16px;
+    border-width: 0 2px 2px 0;
+    transform: rotate(-45deg);
+    border-color: white;
+    background-color: #ffffff00;
+}
+
+form {
+    height:0px;
+}
+
+>>>>>>> Stashed changes:Intranet Tweaks/popup/main.css
 /*------  CHECKLIST  -------*/
 
 

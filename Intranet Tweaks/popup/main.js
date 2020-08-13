@@ -29,6 +29,26 @@ function checklistChecked() {
     }, false);
 }
 
+<<<<<<< Updated upstream:Intranet Tweaks/popup.js
+=======
+function colorSelect(iconId, inputId) {
+    if (!document.getElementById(inputId) || !document.getElementById(iconId)) {
+        return; // Error catch
+    }
+    document.getElementById(iconId).addEventListener("click", function (ev) {
+        document.getElementById(inputId).click();
+    }, false)
+
+    document.getElementById(inputId).addEventListener("change", function (ev) {
+        color = document.getElementById(inputId).value
+        document.getElementById(iconId).style.backgroundColor = color;
+        chrome.storage.sync.set({
+            [inputId]: color,
+        });
+    })
+}
+
+>>>>>>> Stashed changes:Intranet Tweaks/popup/main.js
 function onLoad() {
     presetChecklist();
     checklistChecked();
