@@ -2,7 +2,15 @@
 function presetChecklist() {
     var list = document.getElementById('myUL');
     console.log(list.children);//temp
-    chrome.storage.sync.get(["doFixPeriodNumbers", "doOrderZoomMeetings", "doAppendMusicTimetable", "doSeperateTimetableBreaks", "doHighlightMusicLessons", "highlightMusicLessonsColor", "highlightTimetableBreaks"], function (response) {
+    chrome.storage.sync.get(["doFixPeriodNumbers", 
+                            "doOrderZoomMeetings", 
+                            "doAppendMusicTimetable", 
+                            "doSeperateTimetableBreaks", 
+                            "doHighlightMusicLessons", 
+                            "highlightMusicLessonsColor", 
+                            "highlightTimetableBreaks", 
+                            "closeZoomSuccessTabs"], function (response) {
+                                
         doFixPeriodNumbers = response.doFixPeriodNumbers;
         doSeperateTimetableBreaks = response.doSeperateTimetableBreaks;
         doOrderZoomMeetings = response.doOrderZoomMeetings;
@@ -10,12 +18,14 @@ function presetChecklist() {
         doHighlightMusicLessons = response.doHighlightMusicLessons;
         highlightMusicLessonsColor = response.highlightMusicLessonsColor;
         highlightTimetableBreaks = response.highlightTimetableBreaks;
+        closeZoomSuccessTabs = response.closeZoomSuccessTabs;
 
         if (doFixPeriodNumbers) {document.querySelector("[intranetfeatureid=doFixPeriodNumbers]").classList.add("checked")};
         if (doOrderZoomMeetings) {document.querySelector("[intranetfeatureid=doOrderZoomMeetings]").classList.add("checked")};
         if (doAppendMusicTimetable) {document.querySelector("[intranetfeatureid=doAppendMusicTimetable]").classList.add("checked")};
         if (doSeperateTimetableBreaks) {document.querySelector("[intranetfeatureid=doSeperateTimetableBreaks]").classList.add("checked")};
         if (doHighlightMusicLessons) {document.querySelector("[intranetfeatureid=doHighlightMusicLessons]").classList.add("checked")};
+        if (closeZoomSuccessTabs) {document.querySelector("[intranetfeatureid=closeZoomSuccessTabs]").classList.add("checked")};
         
         document.getElementById("highlightMusicLessonsColorIcon").style.backgroundColor = highlightMusicLessonsColor;
         document.getElementById("highlightMusicLessonsColor").value = highlightMusicLessonsColor;

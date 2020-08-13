@@ -1,4 +1,17 @@
-chrome.runtime.onInstalled.addListener( // When the shortcut is first run
+// Functions
+
+function catchZoomSuccess (tabId, changeInfo) {
+    if (changeInfo.url != undefined) {
+        console.log(changeInfo.url)
+        if (changeInfo.url.endsWith("#success") && changeInfo.url.startsWith("https://cgsvic.zoom.us/j/")) { // if tab is successful zoom launch
+            chrome.tabs.remove(tabId, function() { }); // remove it
+        }
+    }
+}
+
+// Listeners
+
+chrome.runtime.onInstalled.addListener( // When the extension is first run
     function (details) {
         chrome.storage.sync.get(["doFixPeriodNumbers", 
                                 "doSeperateTimetableBreaks", 
@@ -6,7 +19,10 @@ chrome.runtime.onInstalled.addListener( // When the shortcut is first run
                                 "doAppendMusicTimetable", 
                                 "doHighlightMusicLessons", 
                                 "highlightMusicLessonsColor",
-                                "highlightTimetableBreaks"], function (response) {
+                                "highlightTimetableBreaks",
+                                "closeZoomSuccessTabs"], 
+                                
+                                function (response) {
 
             chrome.storage.sync.set({"doFixPeriodNumbers": (((doFixPeriodNumbers = response.doFixPeriodNumbers) != undefined) ? doFixPeriodNumbers : true), // Set presets for settings
                                   "doSeperateTimetableBreaks": (((doSeperateTimetableBreaks = response.doSeperateTimetableBreaks) != undefined) ? doSeperateTimetableBreaks : true),
@@ -14,9 +30,34 @@ chrome.runtime.onInstalled.addListener( // When the shortcut is first run
                                   "doAppendMusicTimetable": (((doAppendMusicTimetable = response.doAppendMusicTimetable) != undefined) ? doAppendMusicTimetable : false),
                                   "doHighlightMusicLessons": (((doHighlightMusicLessons = response.doHighlightMusicLessons) != undefined) ? doHighlightMusicLessons : true),
                                   "highlightMusicLessonsColor": (((highlightMusicLessonsColor = response.highlightMusicLessonsColor) != undefined) ? highlightMusicLessonsColor : "#f4d776"),
-                                  "highlightTimetableBreaks": (((highlightTimetableBreaks = response.highlightTimetableBreaks) != undefined) ? highlightTimetableBreaks : "#ddeedd")}) 
+                                  "highlightTimetableBreaks": (((highlightTimetableBreaks = response.highlightTimetableBreaks) != undefined) ? highlightTimetableBreaks : "#ddeedd"),
+                                  "closeZoomSuccessTabs": (((closeZoomSuccessTabs = response.closeZoomSuccessTabs) != undefined) ? closeZoomSuccessTabs : true)});
+            if (response.closeZoomSuccessTabs) {
+                chrome.tabs.onUpdated.addListener( // When tabs update
+                    catchZoomSuccess    
+                )
+            } 
+                                }
+                            )
+        
+    }
+)
+
+chrome.storage.onChanged.addListener(
+    function (changes, area) {
+        if (area == "sync") {
+            closeZoomSuccessTabs = changes["closeZoomSuccessTabs"];
+            if (closeZoomSuccessTabs === true) {
+                chrome.tabs.onUpdated.addListener( // When tabs update
+                    catchZoomSuccess    
+                )
             }
-        )
+            else if (closeZoomSuccessTabs === false) {
+                chrome.tabs.onUpdated.removeListener( // When tabs update
+                    catchZoomSuccess    // Don't do it
+                )
+            }
+        }
     }
 )
 
@@ -42,3 +83,4 @@ chrome.runtime.onMessage.addListener(
         return true;  // Will respond asynchronously.
         }
     });
+
