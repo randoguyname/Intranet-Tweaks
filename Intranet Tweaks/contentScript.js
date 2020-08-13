@@ -71,6 +71,14 @@ function parsePeriodIndex(text, doSeperateTimetableBreaks=false) {
         // Return Period Index, put through mapping if necassary
         if (!doSeperateTimetableBreaks) return groups.flat().pop(); else return periodMapsTimetableBreaks[groups.pop()]; 
     }
+    else if (doSeperateTimetableBreaks) {
+        if (text.startsWith("Recess")) {
+            return [4, 0];
+        }
+        else if (text.startsWith("Lunch")) {
+            return [7, 0];
+        }
+    }
 }
 
 function highlightMusicCells(timetable, musicLessons, backgroundColor) {
@@ -98,12 +106,12 @@ function fixPeriodNumbers() {
     }
 }
 
-function seperateTimetableBreaks() {
+function seperateTimetableBreaks(highlightTimetableBreaks) {
     tBody = document.getElementsByTagName("table")[3].tBodies[0] // Gets the timetable
     
     // Break for Recess
     recessBreak = tBody.insertRow(4);  // Insert row
-    recessBreak.style.backgroundColor = "#ded"; // Darken Background
+    recessBreak.style.backgroundColor = highlightTimetableBreaks; // Highlight Background
     recessCell = recessBreak.insertCell(0); // Make cell to say "Recess"
     recessCell.innerText = "Recess"
     recessCell.style.textAlign = "center" // Align text to center
@@ -114,7 +122,7 @@ function seperateTimetableBreaks() {
 
     // Break for Lunch
     lunchBreak = tBody.insertRow(7);  // Insert row
-    lunchBreak.style.backgroundColor = "#ded"; // Darken Background
+    lunchBreak.style.backgroundColor = highlightTimetableBreaks; // Highlight Background
     lunchCell = lunchBreak.insertCell(0); // Make cell to say "Lunch"
     lunchCell.innerText = "Lunch"
     lunchCell.style.textAlign = "center" // Align text to center
@@ -137,14 +145,21 @@ function highlightMusicLessons() {
 
                 musicLessons = []; // All music lessons on your music timetable
                 atLessons = false; // If at the point in the document when lessons occur
-                parsingDay = 1; // The day of the lesson, ie. 1=Monday, 2=Tuesday, etc.
+                parsingDay = [1]; // The day of the lesson, ie. 1=Monday, 2=Tuesday, etc.
                 for (lesson of musicLessonsRows) {
                     if (atLessons) { // If passed point of music lessons
                         if (dayIndex = parseDayIndex(lesson.innerText)) {
-                            parsingDay = dayIndex
+                            parsingDay = dayIndex;
                         }
                         else if (periodIndex = parsePeriodIndex(lesson.innerText, response.doSeperateTimetableBreaks)) {
-                            musicLessons.push([periodIndex, parsingDay])
+                            if (Array.isArray(periodIndex)) {
+                                musicLessons.push([periodIndex[0], 0]);
+                                musicLessons.push([periodIndex[0], 1]);
+                            }
+                            else {
+                                musicLessons.push([periodIndex, parsingDay]);
+                            }
+                            
                         }
                     }
                     if (lesson.innerText.startsWith("My Timetable")) { // If at point of music lessons
@@ -225,7 +240,7 @@ function appendMusicTimetable() {
 
 // Runtime
 
-chrome.storage.sync.get(["doFixPeriodNumbers", "doSeperateTimetableBreaks", "doOrderZoomMeetings", "doAppendMusicTimetable", "doHighlightMusicLessons"], function (response) {
+chrome.storage.sync.get(["doFixPeriodNumbers", "doSeperateTimetableBreaks", "highlightTimetableBreaks", "doOrderZoomMeetings", "doAppendMusicTimetable", "doHighlightMusicLessons"], function (response) {
     if (response.doFixPeriodNumbers) {
         fixPeriodNumbers();
     }
@@ -238,7 +253,7 @@ chrome.storage.sync.get(["doFixPeriodNumbers", "doSeperateTimetableBreaks", "doO
         appendMusicTimetable();
     }
     if (response.doSeperateTimetableBreaks) {
-        seperateTimetableBreaks();
+        seperateTimetableBreaks(response.highlightTimetableBreaks);
     }
 
     if (response.doHighlightMusicLessons) {
