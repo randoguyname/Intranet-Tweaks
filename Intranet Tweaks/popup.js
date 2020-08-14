@@ -42,7 +42,13 @@ function checklistChecked() {
     if (ev.target.tagName === 'LI') {
         ev.target.classList.toggle('checked');
         featureId = ev.target.attributes["intranetfeatureid"].value
-        chrome.storage.sync.set({[featureId]:ev.target.classList.contains("checked")})
+        isEnabled = ev.target.classList.contains("checked")
+        chrome.storage.sync.set({[featureId]:isEnabled})
+        if (featureId == "closeZoomSuccessTabs" && isEnabled) {
+            chrome.runtime.sendMessage(
+                {contentScriptQuery: "purgeZoomTabs"}
+            )
+        }
         }
     }, false);
 }

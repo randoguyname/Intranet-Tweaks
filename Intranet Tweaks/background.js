@@ -2,9 +2,13 @@
 
 function catchZoomSuccess (tabId, changeInfo) {
     if (changeInfo.url != undefined) {
-        console.log(changeInfo.url)
         if (changeInfo.url.endsWith("#success") && changeInfo.url.startsWith("https://cgsvic.zoom.us/j/")) { // if tab is successful zoom launch
-            chrome.tabs.remove(tabId, function() { }); // remove it
+            chrome.storage.sync.get(['closeZoomSuccessTabs'], function (response) {
+                if (response.closeZoomSuccessTabs) {
+                    chrome.tabs.remove(tabId, function() { }); // remove it
+                }
+            })
+            
         }
     }
 }
@@ -43,24 +47,6 @@ chrome.runtime.onInstalled.addListener( // When the extension is first run
     }
 )
 
-chrome.storage.onChanged.addListener(
-    function (changes, area) {
-        if (area == "sync") {
-            closeZoomSuccessTabs = changes["closeZoomSuccessTabs"];
-            if (closeZoomSuccessTabs === true) {
-                chrome.tabs.onUpdated.addListener( // When tabs update
-                    catchZoomSuccess    
-                )
-            }
-            else if (closeZoomSuccessTabs === false) {
-                chrome.tabs.onUpdated.removeListener( // When tabs update
-                    catchZoomSuccess    // Don't do it
-                )
-            }
-        }
-    }
-)
-
 chrome.runtime.onMessage.addListener(
     function (request, sender, sendResponse) {
       if (request.contentScriptQuery == "queryMeetings") {  // When triggered to get zoom meetings
@@ -84,3 +70,16 @@ chrome.runtime.onMessage.addListener(
         }
     });
 
+chrome.runtime.onMessage.addListener(
+    function (request, sender, sendResponse) {
+        if (request.contentScriptQuery == "purgeZoomTabs") {  // When triggered to remove tabs
+            chrome.tabs.query({}, function (tabs){
+                for (tab of tabs) {
+                    if (/https:\/\/cgsvic.zoom.us\/j\/\d*#success/g.test(tab.url)) { 
+                        chrome.tabs.remove(tab.id, function () { }); 
+                    }
+                }
+            });
+            return true;  // Will respond asynchronously.
+        }
+    });
