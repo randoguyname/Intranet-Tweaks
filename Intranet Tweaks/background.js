@@ -2,7 +2,7 @@
 
 function catchZoomSuccess (tabId, changeInfo) {
     if (changeInfo.url != undefined) {
-        if (changeInfo.url.endsWith("#success") && changeInfo.url.startsWith("https://cgsvic.zoom.us/j/")) { // if tab is successful zoom launch
+        if (/https:\/\/cgsvic.zoom.us\/j\/\d*#success/g.test(changeInfo.url) || /https:\/\/cgsvic.zoom.us\/postattendee.*/g.test(changeInfo.url)) { // if tab is successful zoom launch
             chrome.storage.sync.get(['closeZoomSuccessTabs'], function (response) {
                 if (response.closeZoomSuccessTabs) {
                     chrome.tabs.remove(tabId, function() { }); // remove it
@@ -75,7 +75,7 @@ chrome.runtime.onMessage.addListener(
         if (request.contentScriptQuery == "purgeZoomTabs") {  // When triggered to remove tabs
             chrome.tabs.query({}, function (tabs){
                 for (tab of tabs) {
-                    if (/https:\/\/cgsvic.zoom.us\/j\/\d*#success/g.test(tab.url)) { 
+                    if (/https:\/\/cgsvic.zoom.us\/j\/\d*#success/g.test(tab.url) || /https:\/\/cgsvic.zoom.us\/postattendee.*/g.test(tab.url)) { 
                         chrome.tabs.remove(tab.id, function () { }); 
                     }
                 }
