@@ -7,7 +7,7 @@ var allStorage = [
     "doAppendMusicTimetable", 
     "doHighlightMusicLessons", 
     "highlightMusicLessonsColor",
-    "highlightTimetableBreaks",
+    "highlightTimetableBreaksColor",
     "closeZoomSuccessTabs"
 ]
 
@@ -81,7 +81,7 @@ chrome.runtime.onInstalled.addListener( // When the extension is first run
                                   "doAppendMusicTimetable": (((doAppendMusicTimetable = response.doAppendMusicTimetable) != undefined) ? doAppendMusicTimetable : false),
                                   "doHighlightMusicLessons": (((doHighlightMusicLessons = response.doHighlightMusicLessons) != undefined) ? doHighlightMusicLessons : true),
                                   "highlightMusicLessonsColor": (((highlightMusicLessonsColor = response.highlightMusicLessonsColor) != undefined) ? highlightMusicLessonsColor : "#f4d776"),
-                                  "highlightTimetableBreaks": (((highlightTimetableBreaks = response.highlightTimetableBreaks) != undefined) ? highlightTimetableBreaks : "#ddeedd"),
+                                  "highlightTimetableBreaksColor": (((highlightTimetableBreaksColor = response.highlightTimetableBreaksColor) != undefined) ? highlightTimetableBreaksColor : "#ddeedd"),
                                   "closeZoomSuccessTabs": (((closeZoomSuccessTabs = response.closeZoomSuccessTabs) != undefined) ? closeZoomSuccessTabs : true)});
             if (response.closeZoomSuccessTabs) {
                 chrome.tabs.onUpdated.addListener( // When tabs update

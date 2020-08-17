@@ -116,12 +116,12 @@ function fixPeriodNumbers() {
     }
 }
 
-function seperateTimetableBreaks(highlightTimetableBreaks) {
+function seperateTimetableBreaks(highlightTimetableBreaksColor) {
     tBody = document.getElementsByTagName("table")[3].tBodies[0] // Gets the timetable
     
     // Break for Recess
     recessBreak = tBody.insertRow(4);  // Insert row
-    recessBreak.style.backgroundColor = highlightTimetableBreaks; // Highlight Background
+    recessBreak.style.backgroundColor = highlightTimetableBreaksColor; // Highlight Background
     recessCell = recessBreak.insertCell(0); // Make cell to say "Recess"
     recessCell.innerText = "Recess"
     recessCell.style.textAlign = "center" // Align text to center
@@ -132,7 +132,7 @@ function seperateTimetableBreaks(highlightTimetableBreaks) {
 
     // Break for Lunch
     lunchBreak = tBody.insertRow(7);  // Insert row
-    lunchBreak.style.backgroundColor = highlightTimetableBreaks; // Highlight Background
+    lunchBreak.style.backgroundColor = highlightTimetableBreaksColor; // Highlight Background
     lunchCell = lunchBreak.insertCell(0); // Make cell to say "Lunch"
     lunchCell.innerText = "Lunch"
     lunchCell.style.textAlign = "center" // Align text to center
@@ -263,7 +263,7 @@ chrome.storage.sync.get(allFeatures, function (response) {
         appendMusicTimetable();
     }
     if (response.doSeperateTimetableBreaks) {
-        seperateTimetableBreaks(response.highlightTimetableBreaks);
+        seperateTimetableBreaks(response.highlightTimetableBreaksColor);
     }
 
     if (response.doHighlightMusicLessons) {

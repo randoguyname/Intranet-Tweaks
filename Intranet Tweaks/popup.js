@@ -1,36 +1,32 @@
+// Variables
+
+allFeatureIds = [
+    "doFixPeriodNumbers", 
+    "doOrderZoomMeetings", 
+    "doAppendMusicTimetable", 
+    "doSeperateTimetableBreaks", 
+    "doHighlightMusicLessons", 
+    "closeZoomSuccessTabs"
+]
+
+highlightColors = [
+    "highlightMusicLessonsColor", 
+    "highlightTimetableBreaksColor"
+]
+
 // Preset the checklist with all the stored values
 function presetChecklist() {
     var list = document.getElementById('myUL');
-    console.log(list.children);//temp
-    chrome.storage.sync.get(["doFixPeriodNumbers", 
-                            "doOrderZoomMeetings", 
-                            "doAppendMusicTimetable", 
-                            "doSeperateTimetableBreaks", 
-                            "doHighlightMusicLessons", 
-                            "highlightMusicLessonsColor", 
-                            "highlightTimetableBreaks", 
-                            "closeZoomSuccessTabs"], function (response) {
-                                
-        doFixPeriodNumbers = response.doFixPeriodNumbers;
-        doSeperateTimetableBreaks = response.doSeperateTimetableBreaks;
-        doOrderZoomMeetings = response.doOrderZoomMeetings;
-        doAppendMusicTimetable = response.doAppendMusicTimetable;
-        doHighlightMusicLessons = response.doHighlightMusicLessons;
-        highlightMusicLessonsColor = response.highlightMusicLessonsColor;
-        highlightTimetableBreaks = response.highlightTimetableBreaks;
-        closeZoomSuccessTabs = response.closeZoomSuccessTabs;
+    chrome.storage.sync.get(allFeatureIds.concat(highlightColors), function (response) {
+                          
+        for (featureId of allFeatureIds) {
+            if (response[featureId]) {document.querySelector(`[intranetfeatureid=${featureId}]`).classList.add("checked")};
+        }
 
-        if (doFixPeriodNumbers) {document.querySelector("[intranetfeatureid=doFixPeriodNumbers]").classList.add("checked")};
-        if (doOrderZoomMeetings) {document.querySelector("[intranetfeatureid=doOrderZoomMeetings]").classList.add("checked")};
-        if (doAppendMusicTimetable) {document.querySelector("[intranetfeatureid=doAppendMusicTimetable]").classList.add("checked")};
-        if (doSeperateTimetableBreaks) {document.querySelector("[intranetfeatureid=doSeperateTimetableBreaks]").classList.add("checked")};
-        if (doHighlightMusicLessons) {document.querySelector("[intranetfeatureid=doHighlightMusicLessons]").classList.add("checked")};
-        if (closeZoomSuccessTabs) {document.querySelector("[intranetfeatureid=closeZoomSuccessTabs]").classList.add("checked")};
-        
-        document.getElementById("highlightMusicLessonsColorIcon").style.backgroundColor = highlightMusicLessonsColor;
-        document.getElementById("highlightMusicLessonsColor").value = highlightMusicLessonsColor;
-        document.getElementById("highlightTimetableBreaksIcon").style.backgroundColor = highlightTimetableBreaks;
-        document.getElementById("highlightTimetableBreaks").value = highlightTimetableBreaks;
+        for (highlightColor of highlightColors) {
+            document.getElementById(`${highlightColor}Icon`).style.backgroundColor = response[highlightColor];
+            document.getElementById(highlightColor).value = response[highlightColor];
+        }
     })
 
 }
@@ -71,7 +67,7 @@ function colorSelect(iconId, inputId) {
 
 function onLoad() {
     colorSelect("highlightMusicLessonsColorIcon", "highlightMusicLessonsColor")
-    colorSelect("highlightTimetableBreaksIcon", "highlightTimetableBreaks")
+    colorSelect("highlightTimetableBreaksColorIcon", "highlightTimetableBreaksColor")
     presetChecklist();
     checklistChecked();
 }
