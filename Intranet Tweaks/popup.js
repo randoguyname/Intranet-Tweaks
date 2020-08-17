@@ -46,7 +46,9 @@ function checklistChecked() {
         chrome.storage.sync.set({[featureId]:isEnabled})
         if (featureId == "closeZoomSuccessTabs" && isEnabled) {
             chrome.runtime.sendMessage(
-                {contentScriptQuery: "purgeZoomTabs"}
+                {
+                    contentScriptQuery: "purgeZoomTabs",
+                }
             )
         }
         }

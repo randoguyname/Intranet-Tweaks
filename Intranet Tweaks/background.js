@@ -1,32 +1,79 @@
+// Variables
+
+var allStorage = [
+    "doFixPeriodNumbers", 
+    "doSeperateTimetableBreaks", 
+    "doOrderZoomMeetings", 
+    "doAppendMusicTimetable", 
+    "doHighlightMusicLessons", 
+    "highlightMusicLessonsColor",
+    "highlightTimetableBreaks",
+    "closeZoomSuccessTabs"
+]
+
+var completeZoomMeetingLinkPatterns = [
+    /https:\/\/cgsvic.zoom.us\/j\/\d*.*#success/g, 
+    /https:\/\/cgsvic.zoom.us\/postattendee.*/g
+]
+
 // Functions
 
-function catchZoomSuccess (tabId, changeInfo) {
-    if (changeInfo.url != undefined) {
-        if (/https:\/\/cgsvic.zoom.us\/j\/\d*#success/g.test(changeInfo.url) || /https:\/\/cgsvic.zoom.us\/postattendee.*/g.test(changeInfo.url)) { // if tab is successful zoom launch
-            chrome.storage.sync.get(['closeZoomSuccessTabs'], function (response) {
-                if (response.closeZoomSuccessTabs) {
-                    chrome.tabs.remove(tabId, function() { }); // remove it
+function purgeTabs(patterns, matchMode, dependsOnStorage) { // Remove all tabs with a url pattern (regex) 
+    // Modes include (or, xor, nor, xnor, and, nand)
+    chrome.tabs.query({}, function (tabs){
+        chrome.storage.sync.get([dependsOnStorage], function (response) {
+            if (!response[dependsOnStorage]) {
+                return;
+            }
+
+            for (tab of tabs) {
+                matches = [];
+                isMatch = false;
+                for (pattern of patterns) {
+                    if (pattern.test(tab.url)) {
+                        matches.push(1);
+                    }
+                    else {
+                        matches.push(0);
+                    }
                 }
-            })
-            
-        }
-    }
+                switch (matchMode) {
+                    case "or":
+                        isMatch = matches.some((match) => match) // Simulates OR gate
+                        break;
+                    case "xor":
+                        isMatch = matches.some((match) => match) && !matches.every((match) => match) // Simulates XOR gate
+                        break;
+                    case "nor":
+                        isMatch = !matches.some((match) => match) // Simulates NOR gate
+                        break;
+                    case "xnor":
+                        isMatch = matches.every( (val, i, arr) => val === arr[0] ) // Simulates NOR gate
+                        break;
+                    case "and":
+                        isMatch = matches.every((match) => match) // Simulates AND gate
+                        break;
+                    case "nand":
+                        isMatch = !matches.every((match) => match); // Simulates NAND gate
+                        break;
+                }
+                if (isMatch) { // check if tab url matched patterns
+                    chrome.tabs.remove(tab.id, function() { // then remove it
+                        if (chrome.runtime.lastError) { } // if an error occurs, do nothing
+                    }); 
+                    
+                }
+            }
+        });
+    });
+    return true;
 }
 
 // Listeners
 
 chrome.runtime.onInstalled.addListener( // When the extension is first run
     function (details) {
-        chrome.storage.sync.get(["doFixPeriodNumbers", 
-                                "doSeperateTimetableBreaks", 
-                                "doOrderZoomMeetings", 
-                                "doAppendMusicTimetable", 
-                                "doHighlightMusicLessons", 
-                                "highlightMusicLessonsColor",
-                                "highlightTimetableBreaks",
-                                "closeZoomSuccessTabs"], 
-                                
-                                function (response) {
+        chrome.storage.sync.get(allStorage, function (response) {
 
             chrome.storage.sync.set({"doFixPeriodNumbers": (((doFixPeriodNumbers = response.doFixPeriodNumbers) != undefined) ? doFixPeriodNumbers : true), // Set presets for settings
                                   "doSeperateTimetableBreaks": (((doSeperateTimetableBreaks = response.doSeperateTimetableBreaks) != undefined) ? doSeperateTimetableBreaks : true),
@@ -38,11 +85,15 @@ chrome.runtime.onInstalled.addListener( // When the extension is first run
                                   "closeZoomSuccessTabs": (((closeZoomSuccessTabs = response.closeZoomSuccessTabs) != undefined) ? closeZoomSuccessTabs : true)});
             if (response.closeZoomSuccessTabs) {
                 chrome.tabs.onUpdated.addListener( // When tabs update
-                    catchZoomSuccess    
+                    function () {
+                        purgeTabs(completeZoomMeetingLinkPatterns, "or", "closeZoomSuccessTabs"); 
+                        // Remove all tabs that fit *any* of the defined "completeZoomMeetingLinkPatterns" regexes, 
+                        // if storage value "closeZoomSuccessTabs" evaluates to true
+                    }              
+
                 )
             } 
-                                }
-                            )
+        })
         
     }
 )
@@ -73,13 +124,7 @@ chrome.runtime.onMessage.addListener(
 chrome.runtime.onMessage.addListener(
     function (request, sender, sendResponse) {
         if (request.contentScriptQuery == "purgeZoomTabs") {  // When triggered to remove tabs
-            chrome.tabs.query({}, function (tabs){
-                for (tab of tabs) {
-                    if (/https:\/\/cgsvic.zoom.us\/j\/\d*#success/g.test(tab.url) || /https:\/\/cgsvic.zoom.us\/postattendee.*/g.test(tab.url)) { 
-                        chrome.tabs.remove(tab.id, function () { }); 
-                    }
-                }
-            });
+            purgeTabs(completeZoomMeetingLinkPatterns, "or", "closeZoomSuccessTabs");
             return true;  // Will respond asynchronously.
         }
     });

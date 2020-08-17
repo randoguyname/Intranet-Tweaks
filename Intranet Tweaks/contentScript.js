@@ -1,4 +1,14 @@
-// Necessary Functions
+// Variables
+
+var allFeatures = [
+    "doFixPeriodNumbers", 
+    "doSeperateTimetableBreaks", 
+    "doOrderZoomMeetings", 
+    "doAppendMusicTimetable", 
+    "doHighlightMusicLessons",
+]
+
+// Functions
 
 function getMinutesFromTime() {
     if ((time.endsWith("AM") && !time.startsWith("12")) 
@@ -240,7 +250,7 @@ function appendMusicTimetable() {
 
 // Runtime
 
-chrome.storage.sync.get(["doFixPeriodNumbers", "doSeperateTimetableBreaks", "highlightTimetableBreaks", "doOrderZoomMeetings", "doAppendMusicTimetable", "doHighlightMusicLessons"], function (response) {
+chrome.storage.sync.get(allFeatures, function (response) {
     if (response.doFixPeriodNumbers) {
         fixPeriodNumbers();
     }
