@@ -1,26 +1,26 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap');
-.background {
+.background { 
     background-color:#00063E; 
     max-height:300px; 
     width:400px; 
     margin: 0px;
 }
 
-.fill {
+.fill { 
     width:  100%;
     height: 100%;
 }
 
-p {
+p { 
     color: white;
     margin: 0px;
 }
 
-.roboto {
+.roboto { 
     font-family: 'Roboto', sans-serif;
 }
 
-.copyright {
+.copyright { 
     margin: 3 5;
     font-family: Arial, Helvetica, sans-serif;
     text-align: center;
@@ -29,19 +29,10 @@ p {
     opacity: 50%;
 }
 
-.copysymbol {
+.copysymbol { 
     font-size: 60% !important;
     vertical-align: text-top !important;
     padding-left: 1.2px;
-}
-
-.rightChecklistInput {
-    float: right;
-    height: max-content;
-}
-
-input[type="text"] {
-    height: fit-content()
 }
 
 td {
@@ -65,10 +56,10 @@ td {
 ul {
     margin: 0;
     padding: 0;
-  }
+}
   
-  /* Style the list items */
-  ul li {
+/* Style the list items */
+ul li {
     cursor: pointer;
     position: relative;
     padding: 12px 8px 12px 40px;
@@ -77,27 +68,27 @@ ul {
     font-size: 18px;
     transition: 0.2s;
     color:white;
-    
+
     /* make the list items unselectable */
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-  }
-  
-  
-  /* Lighter background-color on hover */
-  ul li:hover {
+}
+
+
+/* Lighter background-color on hover */
+ul li:hover {
     background: #ffffff22;
-  }
-  
-  /* When clicked on, add a lighter background color*/
-  ul li.checked {
+}
+
+/* When clicked on, add a lighter background color*/
+ul li.checked {
     background: #ffffff33;
-  }
-  
-  /* Add a "checked" mark when clicked on */
-  ul li.checked::before {
+}
+
+/* Add a "checked" mark when clicked on */
+ul li.checked::before {
     content: '';
     position: absolute;
     border-color: #fff;
@@ -108,4 +99,4 @@ ul {
     transform: rotate(45deg);
     height: 15px;
     width: 7px;
-  }
+}

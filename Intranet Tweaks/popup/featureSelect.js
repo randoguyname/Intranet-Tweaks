@@ -1,6 +1,6 @@
 // Variables
 
-allFeatureIds = [
+var allFeatureIds = [
     "doFixPeriodNumbers", 
     "doOrderZoomMeetings", 
     "doAppendMusicTimetable", 
@@ -9,7 +9,7 @@ allFeatureIds = [
     "closeZoomSuccessTabs"
 ]
 
-highlightColors = [
+var highlightColors = [
     "highlightMusicLessonsColor", 
     "highlightTimetableBreaksColor"
 ]

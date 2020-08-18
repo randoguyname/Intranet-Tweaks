@@ -8,9 +8,14 @@ var allFeatures = [
     "doHighlightMusicLessons",
 ]
 
+var highlightColors = [
+    "highlightMusicLessonsColor", 
+    "highlightTimetableBreaksColor"
+]
+
 // Functions
 
-function getMinutesFromTime() {
+function getMinutesFromTime(time) {
     if ((time.endsWith("AM") && !time.startsWith("12")) 
             || (time.startsWith("12") && time.endsWith("PM"))) { // if the time is AM (or 12 PM)
         time = time.slice(0,-3) // Remove AM or PM, leaving "11:05"
@@ -104,6 +109,22 @@ function highlightMusicCells(timetable, musicLessons, backgroundColor) {
     }
 }
 
+function waitForElement(doc, querySelector, timeout=0){
+    const startTime = new Date().getTime();
+    return new Promise((resolve, reject)=>{
+        const timer = setInterval(()=>{
+            const now = new Date().getTime();
+            if(doc.querySelector(querySelector)){
+                clearInterval(timer);
+                resolve();
+            }else if(timeout && now - startTime >= timeout){
+                clearInterval(timer);
+                reject();
+            }
+        }, 100);
+    });
+}
+
 // Features
 
 function fixPeriodNumbers() {
@@ -189,6 +210,7 @@ function orderZoomMeetings() {
     iframe_parent = document.getElementById("holds-the-iframe"); // Get the parent of the iframe
     iframe = iframe_parent.children[0]; // Get the iframe
     new_iframe = document.createElement("iframe"); // Create a replacement iframe
+    backup_iframe = document.createElement("iframe") // incase frame fails to load.
 
     userId = /scheduled\.php\?u=(\d+)/g.exec(iframe.src)[1]; // Extract the "userId" from the iframes src url
 
@@ -196,19 +218,43 @@ function orderZoomMeetings() {
     new_iframe.width = iframe.width;
     new_iframe.frameBorder = iframe.frameBorder;
 
-    iframe_parent.removeChild(iframe); // Replace the existing iframe with our new one
+    backup_iframe.height = iframe.height; // Style the backup
+    backup_iframe.width = iframe.width;
+    backup_iframe.frameBorder = iframe.frameBorder;
+
+    backup_iframe.src = iframe.src // Set source
+    backup_iframe.hidden = true // hide
+
+    iframe_parent.removeChild(iframe); // Delete the existing iframe and append the new one and the hidden backup
     iframe_parent.appendChild(new_iframe);
+    iframe_parent.appendChild(backup_iframe);
 
     chrome.runtime.sendMessage(
-        {contentScriptQuery: "queryMeetings", userId: userId}, // Send message to backend script, 
+        {contentScriptQuery: "queryMeetings", userId: userId}, // Send message to background script, 
                                                                // tell it to retrieve the url for the iframe
-        html => {
+        function (html){
+            if (html == undefined) { // An error that sometimes occurs
+                backup_iframe.hidden = false; // Resort to old iframe
+                iframe_parent.removeChild(new_iframe);
+                console.warn("Faliure to sort Zoom meetings, resorting to default Zoom meetings") // send a warning to the console
+                return;
+            }
             new_iframe.contentDocument.write(html); // Write the html to out new iframe
             iframe_parent.style.backgroundImage = "none"; // Hide the loading gif
-            setTimeout(function (frame){ // Ensure iframe is loaded (maybe redundant)
-                table = frame.contentDocument.getElementsByTagName("table")[0]; // Get the table of meetings
-                sortTable(table); // Sort the table
-            },100,new_iframe)
+
+            table = new_iframe.contentDocument.getElementsByTagName("table")[0]; // Get the table of meetings
+            n = 0;
+            waitForElement(new_iframe.contentDocument, "table", 1000) // wait to see if table loads
+                .then(function () { // when loaded
+                    table = new_iframe.contentDocument.getElementsByTagName("table")[0];
+                    sortTable(table); // Sort the table
+                }).catch(function () { // if didn't load in 1 seconds
+                    backup_iframe.hidden = false; // Resort to old iframe
+                    iframe_parent.removeChild(new_iframe);
+                    console.warn("Zoom meetings did not load within one second, resorting to default iframe") // send a warning to the console
+                })
+            
+
         }
     );
 }
@@ -250,7 +296,7 @@ function appendMusicTimetable() {
 
 // Runtime
 
-chrome.storage.sync.get(allFeatures, function (response) {
+chrome.storage.sync.get(allFeatures.concat(highlightColors), function (response) {
     if (response.doFixPeriodNumbers) {
         fixPeriodNumbers();
     }
