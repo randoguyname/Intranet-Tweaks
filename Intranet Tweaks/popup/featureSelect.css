@@ -100,3 +100,40 @@ ul li.checked::before {
     height: 15px;
     width: 7px;
 }
+
+/* Fix "checked" mark for the image upload item*/
+
+ul li[intranetfeatureid="changeIntranetBackground"].checked::before {
+    content: '';
+    position: absolute;
+    border-color: #fff;
+    border-style: solid;
+    border-width: 0 2px 2px 0;
+    top: 12.5px;
+    left: 16px;
+    transform: rotate(45deg);
+    height: 15px;
+    width: 7px;
+}
+
+
+/*  Scrolling  */
+
+.scrollable-content {
+    overflow-x:hidden;
+    overflow-y:scroll;
+}
+.scrollable-content::-webkit-scrollbar {
+    width:5px;
+}
+.scrollable-content::-webkit-scrollbar * {
+    background: transparent;
+}
+.scrollable-content::-webkit-scrollbar-thumb {
+    background: rgba(200,200,255,0.5) !important;
+}
+
+
+footer {
+    margin-top: 10px;
+}

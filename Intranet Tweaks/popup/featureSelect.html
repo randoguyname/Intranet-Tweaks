@@ -6,14 +6,14 @@
 </head>
 
 <body class="background">
-    <div class="fill roboto">
+    <div class="fill roboto scrollable-content">
         <ul id="myUL">
             <li intranetfeatureid="doFixPeriodNumbers">Fix Period Numbers</li>
             <li intranetfeatureid="doSeperateTimetableBreaks">
-                <table cellpadding=0 cellspacing=0 style="width:100%">
-                    <tbody>
-                        <tr>
-                            <td><p>Show Recess & Lunch</p></td>
+                <table cellpadding=0 cellspacing=0 style="width:100%" intranetfeatureid="doSeperateTimetableBreaks">
+                    <tbody intranetfeatureid="doSeperateTimetableBreaks">
+                        <tr intranetfeatureid="doSeperateTimetableBreaks">
+                            <td intranetfeatureid="doSeperateTimetableBreaks"><p intranetfeatureid="doSeperateTimetableBreaks">Show Recess & Lunch</p></td>
                             <td class="rightTable">
                                 <div id="highlightTimetableBreaksColorIcon" class="colorSelect"></div>
                                 <input type="color" id="highlightTimetableBreaksColor" style="opacity:0; width:0px; height:0px; padding:0; border:0;">
@@ -25,10 +25,10 @@
             <li intranetfeatureid="doOrderZoomMeetings">Order Zoom Meetings</li>
             <li intranetfeatureid="doAppendMusicTimetable">Show Music Timetable</li>
             <li intranetfeatureid="doHighlightMusicLessons">
-                <table cellpadding=0 cellspacing=0 style="width:100%">
-                    <tbody>
-                        <tr>
-                            <td><p>Highlight Music Lessons</p></td>
+                <table cellpadding=0 cellspacing=0 style="width:100%" intranetfeatureid="doHighlightMusicLessons">
+                    <tbody intranetfeatureid="doHighlightMusicLessons">
+                        <tr intranetfeatureid="doHighlightMusicLessons">
+                            <td intranetfeatureid="doHighlightMusicLessons"><p intranetfeatureid="doHighlightMusicLessons">Highlight Music Lessons</p></td>
                             <td class="rightTable">
                                 <div id="highlightMusicLessonsColorIcon" class="colorSelect"></div>
                                 <input type="color" id="highlightMusicLessonsColor" style="opacity:0; width:0px; height:0px; padding:0; border:0;">
@@ -38,6 +38,25 @@
                 </table>
             </li>
             <li intranetfeatureid="closeZoomSuccessTabs">Close Finished Zoom Tabs</li>
+            <li intranetfeatureid="removeDeprecated">Remove Deprecated Buttons/Utilities</li>
+            <!--li intranetfeatureid="changeIntranetBackground">
+                <table cellpadding=0 cellspacing=0 style="width:100%" intranetfeatureid="changeIntranetBackground">
+                    <tbody intranetfeatureid="changeIntranetBackground">
+                        <tr intranetfeatureid="changeIntranetBackground">
+                            <td intranetfeatureid="changeIntranetBackground"><p intranetfeatureid="changeIntranetBackground">Replace Intranet Background</p></td>
+                            <td class="rightTable">
+                                <input id="changeIntranetBackground" type="file" accept="image/png, image/jpeg" hidden>
+                                <svg id="changeIntranetBackgroundIcon" height='24px' width='24px'  fill="#ffffff" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 8.5465 100 82.907" enable-background="new 0 0 100 82.907" xml:space="preserve">
+                                    <path fill="#ffffff" d="M77.944,82.907H5.574C2.203,82.907,0,80.542,0,77.666V21.944c0-3.456,2.118-6.072,5.574-6.072h44.453v11.051 H11.047v45.006h60.975V54.797l11.99-0.008v22.876C84.012,80.542,81.229,82.907,77.944,82.907L77.944,82.907z"></path>
+                                    <polygon fill="#ffffff" points="16.544,66.935 39.792,44.608 50.236,54.387 61.469,39.622 66.973,50.159 67.012,66.935 16.544,66.935 "></polygon>
+                                    <path fill="#ffffff" d="M28.048,44.446c-3.169,0-5.744-2.575-5.744-5.745c0-3.177,2.575-5.751,5.744-5.751 c3.178,0,5.752,2.574,5.752,5.751C33.8,41.871,31.226,44.446,28.048,44.446L28.048,44.446z"></path>
+                                    <polygon fill="#ffffff" points="84.043,21.944 84.043,43.966 71.983,43.966 71.967,21.944 56.119,21.944 78.059,0 100,21.944 84.043,21.944 "></polygon>
+                                </svg>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </li-->
         </ul>
     </div>
     <footer>

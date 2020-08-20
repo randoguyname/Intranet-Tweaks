@@ -1,15 +1,16 @@
 // Variables
 
-var allStorage = [
-    "doFixPeriodNumbers", 
-    "doSeperateTimetableBreaks", 
-    "doOrderZoomMeetings", 
-    "doAppendMusicTimetable", 
-    "doHighlightMusicLessons", 
-    "highlightMusicLessonsColor",
-    "highlightTimetableBreaksColor",
-    "closeZoomSuccessTabs"
-]
+var allStorageDefaults = {
+    "doFixPeriodNumbers": true, 
+    "doSeperateTimetableBreaks": true, 
+    "doOrderZoomMeetings": true, 
+    "doAppendMusicTimetable": false, 
+    "doHighlightMusicLessons": true, 
+    "highlightMusicLessonsColor": "#f4d776",
+    "highlightTimetableBreaksColor": "#ddeedd",
+    "closeZoomSuccessTabs": true,
+    "removeDeprecated": true,
+}
 
 var completeZoomMeetingLinkPatterns = [
     /https:\/\/cgsvic.zoom.us\/j\/\d*.*#success/g, 
@@ -73,16 +74,14 @@ function purgeTabs(patterns, matchMode, dependsOnStorage) { // Remove all tabs w
 
 chrome.runtime.onInstalled.addListener( // When the extension is first run
     function (details) {
-        chrome.storage.sync.get(allStorage, function (response) {
-
-            chrome.storage.sync.set({"doFixPeriodNumbers": (((doFixPeriodNumbers = response.doFixPeriodNumbers) != undefined) ? doFixPeriodNumbers : true), // Set presets for settings
-                                  "doSeperateTimetableBreaks": (((doSeperateTimetableBreaks = response.doSeperateTimetableBreaks) != undefined) ? doSeperateTimetableBreaks : true),
-                                  "doOrderZoomMeetings": (((doOrderZoomMeetings = response.doOrderZoomMeetings) != undefined) ? doOrderZoomMeetings : true),
-                                  "doAppendMusicTimetable": (((doAppendMusicTimetable = response.doAppendMusicTimetable) != undefined) ? doAppendMusicTimetable : false),
-                                  "doHighlightMusicLessons": (((doHighlightMusicLessons = response.doHighlightMusicLessons) != undefined) ? doHighlightMusicLessons : true),
-                                  "highlightMusicLessonsColor": (((highlightMusicLessonsColor = response.highlightMusicLessonsColor) != undefined) ? highlightMusicLessonsColor : "#f4d776"),
-                                  "highlightTimetableBreaksColor": (((highlightTimetableBreaksColor = response.highlightTimetableBreaksColor) != undefined) ? highlightTimetableBreaksColor : "#ddeedd"),
-                                  "closeZoomSuccessTabs": (((closeZoomSuccessTabs = response.closeZoomSuccessTabs) != undefined) ? closeZoomSuccessTabs : true)});
+        chrome.storage.sync.get(Object.keys(allStorageDefaults), function (response) {
+            storage = {}
+            for ([storageKey, def] of Object.entries(allStorageDefaults)) { // Set presets for settings
+                storage[storageKey] = (((value = response[storageKey]) != undefined) ? value : def)
+            }
+            console.log(storage)
+            chrome.storage.sync.set(storage)
+            
             if (response.closeZoomSuccessTabs) {
                 chrome.tabs.onUpdated.addListener( // When tabs update
                     function () {

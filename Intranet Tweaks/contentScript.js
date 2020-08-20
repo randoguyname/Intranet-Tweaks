@@ -6,6 +6,7 @@ var allFeatures = [
     "doOrderZoomMeetings", 
     "doAppendMusicTimetable", 
     "doHighlightMusicLessons",
+    "removeDeprecated",
 ]
 
 var highlightColors = [
@@ -293,6 +294,16 @@ function appendMusicTimetable() {
     )
 }
 
+function removeDeprecated() { // Removes Unused things in the student intranet
+    // Timetable
+    timetable = document.getElementsByTagName("table")[3]
+
+    timetable.tHead.deleteRow(0)
+    for (day of timetable.tHead.querySelectorAll("a")) {
+        parent = day.parentNode;
+        parent.innerText = day.innerText
+    }
+}
 
 // Runtime
 
@@ -314,5 +325,9 @@ chrome.storage.sync.get(allFeatures.concat(highlightColors), function (response)
 
     if (response.doHighlightMusicLessons) {
         highlightMusicLessons();
+    }
+
+    if (response.removeDeprecated) {
+        removeDeprecated();
     }
 })

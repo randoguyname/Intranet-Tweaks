@@ -6,8 +6,8 @@ var allFeatureIds = [
     "doAppendMusicTimetable", 
     "doSeperateTimetableBreaks", 
     "doHighlightMusicLessons", 
-    "closeZoomSuccessTabs"
-]
+    "closeZoomSuccessTabs",
+    "removeDeprecated",]
 
 var highlightColors = [
     "highlightMusicLessonsColor", 
@@ -35,19 +35,21 @@ function presetChecklist() {
 function checklistChecked() {
     var list = document.getElementById('myUL');
     list.addEventListener('click', function(ev) {
-    if (ev.target.tagName === 'LI') {
-        ev.target.classList.toggle('checked');
-        featureId = ev.target.attributes["intranetfeatureid"].value
-        isEnabled = ev.target.classList.contains("checked")
-        chrome.storage.sync.set({[featureId]:isEnabled})
-        if (featureId == "closeZoomSuccessTabs" && isEnabled) {
-            chrome.runtime.sendMessage(
-                {
-                    contentScriptQuery: "purgeZoomTabs",
-                }
-            )
+        if (ev.target.attributes['intranetfeatureid']) {
+            item = document.querySelector(`li[intranetfeatureid=${ev.target.attributes.intranetfeatureid.value}]`)
+            item.classList.toggle('checked');
+            featureId = item.attributes["intranetfeatureid"].value
+            isEnabled = item.classList.contains("checked")
+            chrome.storage.sync.set({[featureId]:isEnabled})
+            if (featureId == "closeZoomSuccessTabs" && isEnabled) {
+                chrome.runtime.sendMessage(
+                    {
+                        contentScriptQuery: "purgeZoomTabs",
+                    }
+                )
+            }
         }
-        }
+
     }, false);
 }
 
