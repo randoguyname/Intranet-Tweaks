@@ -1,14 +1,17 @@
 // Variables
 
-var allFeatures = [
+var allFeaturesSync = [
     "doFixPeriodNumbers", 
     "doSeperateTimetableBreaks", 
     "doOrderZoomMeetings", 
     "doAppendMusicTimetable", 
     "doHighlightMusicLessons",
-    "removeDeprecated",
+    "removeDeprecated"
 ]
 
+var allFeaturesLocal = [
+    "changeIntranetBackground"
+]
 var highlightColors = [
     "highlightMusicLessonsColor", 
     "highlightTimetableBreaksColor"
@@ -305,9 +308,13 @@ function removeDeprecated() { // Removes Unused things in the student intranet
     }
 }
 
+function changeIntranetBackground(base64URL) {
+    document.documentElement.style.backgroundImage = `url(${base64URL})`;
+}
+
 // Runtime
 
-chrome.storage.sync.get(allFeatures.concat(highlightColors), function (response) {
+chrome.storage.sync.get(allFeaturesSync.concat(highlightColors), function (response) {
     if (response.doFixPeriodNumbers) {
         fixPeriodNumbers();
     }
@@ -329,5 +336,13 @@ chrome.storage.sync.get(allFeatures.concat(highlightColors), function (response)
 
     if (response.removeDeprecated) {
         removeDeprecated();
+    }
+})
+
+// Local things
+
+chrome.storage.local.get(allFeaturesLocal, function (storage) {
+    if (storage.changeIntranetBackground[0]) {
+        changeIntranetBackground(storage.changeIntranetBackground[1])
     }
 })

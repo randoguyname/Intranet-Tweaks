@@ -1,6 +1,6 @@
 // Variables
 
-var allStorageDefaults = {
+var syncStorageDefaults = {
     "doFixPeriodNumbers": true, 
     "doSeperateTimetableBreaks": true, 
     "doOrderZoomMeetings": true, 
@@ -9,7 +9,11 @@ var allStorageDefaults = {
     "highlightMusicLessonsColor": "#f4d776",
     "highlightTimetableBreaksColor": "#ddeedd",
     "closeZoomSuccessTabs": true,
-    "removeDeprecated": true,
+    "removeDeprecated": true
+}
+
+var localStorageDefaults = { // Rely on these being two-element arrays, in the format of [isEnabled, data]
+    "changeIntranetBackground": [false, null]
 }
 
 var completeZoomMeetingLinkPatterns = [
@@ -74,14 +78,35 @@ function purgeTabs(patterns, matchMode, dependsOnStorage) { // Remove all tabs w
 
 chrome.runtime.onInstalled.addListener( // When the extension is first run
     function (details) {
-        chrome.storage.sync.get(Object.keys(allStorageDefaults), function (response) {
+        chrome.storage.sync.get(Object.keys(syncStorageDefaults), function (response) {
             storage = {}
-            for ([storageKey, def] of Object.entries(allStorageDefaults)) { // Set presets for settings
+            for ([storageKey, def] of Object.entries(syncStorageDefaults)) { // Set presets for settings
                 storage[storageKey] = (((value = response[storageKey]) != undefined) ? value : def)
             }
-            console.log(storage)
             chrome.storage.sync.set(storage)
+
             
+
+            if (response.closeZoomSuccessTabs) {
+                chrome.tabs.onUpdated.addListener( // When tabs update
+                    function () {
+                        purgeTabs(completeZoomMeetingLinkPatterns, "or", "closeZoomSuccessTabs"); 
+                        // Remove all tabs that fit *any* of the defined "completeZoomMeetingLinkPatterns" regexes, 
+                        // if storage value "closeZoomSuccessTabs" evaluates to true
+                    }              
+
+                )
+            } 
+        })
+        chrome.storage.local.get(Object.keys(localStorageDefaults), function (response) {
+            storage = {}
+            for ([storageKey, def] of Object.entries(localStorageDefaults)) { // Set presets for settings
+                storage[storageKey] = (((value = response[storageKey]) != undefined) ? value : def)
+            }
+            chrome.storage.local.set(storage)
+
+            
+
             if (response.closeZoomSuccessTabs) {
                 chrome.tabs.onUpdated.addListener( // When tabs update
                     function () {
