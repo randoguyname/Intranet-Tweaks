@@ -25,3 +25,12 @@ Note each feature:
 * The period numbers (which are broken in the current version of the student intranet) have now been fixed
 
 Note that each feature can enabled/disabled
+
+## Feature List
+ - Fix the incorrect period numbers on the Intranet Timetable
+ - Separate the intranet timetable with Recess and Lunch breaks, which can be highlighted in any colour you want
+ - List zoom meetings in order of earliest to latest, as opposed to whatever the heck they're doing right now
+ - Show the music timetable at the bottom of the page (this is disabled by default, and you will have to enable it if you want it)
+ - Highlight any music lessons on your intranet timetable, also in any colour you want
+ - Close the tabs that zoom leaves behind after you join a meeting
+ - Remove the noticeboard links on the timetable, as well as the top row, which indicates that they still exist
