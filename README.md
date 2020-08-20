@@ -33,4 +33,5 @@ Note that each feature can enabled/disabled
  - Show the music timetable at the bottom of the page (this is disabled by default, and you will have to enable it if you want it)
  - Highlight any music lessons on your intranet timetable, also in any colour you want
  - Close the tabs that zoom leaves behind after you join a meeting
- - Remove the noticeboard links on the timetable, as well as the top row, which indicates that they still exist
+ - Remove the noticeboard links on the timetable, as well as the top row, which indicates that said links still exist
+ - Change the background image to the intranet
