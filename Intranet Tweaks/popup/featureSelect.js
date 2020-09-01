@@ -7,7 +7,8 @@ var allFeatureIdsSync = [
     "doSeperateTimetableBreaks", 
     "doHighlightMusicLessons", 
     "closeZoomSuccessTabs",
-    "removeDeprecated"
+    "removeDeprecated",
+    "doAutoRefresh"
 ]
 
 var allFeatureIdsLocal = [

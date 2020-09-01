@@ -9,8 +9,11 @@ var syncStorageDefaults = {
     "highlightMusicLessonsColor": "#f4d776",
     "highlightTimetableBreaksColor": "#ddeedd",
     "closeZoomSuccessTabs": true,
-    "removeDeprecated": true
+    "removeDeprecated": true,
+    "doAutoRefresh": true
 }
+
+var pendingRefresh = []
 
 var localStorageDefaults = { // Rely on these being two-element arrays, in the format of [isEnabled, data]
     "changeIntranetBackground": [false, null]
@@ -21,7 +24,77 @@ var completeZoomMeetingLinkPatterns = [
     /https:\/\/cgsvic.zoom.us\/postattendee.*/g
 ]
 
+var intranetURLPatterns = [
+    /https:\/\/intranet.cgs.vic.edu.au\/Portal\/.*/g, 
+    /https:\/\/intranet.cgs.vic.edu.au\/CurriculumPortal\/.*/g
+]
+
 // Functions
+
+function isURLMatch(patterns, matchMode, url) {
+    matches = []
+    for (pattern of patterns) {
+        if (pattern.test(url)) {
+            matches.push(1);
+        }
+        else {
+            matches.push(0);
+        }
+    }
+    switch (matchMode) {
+        case "or":
+            return matches.some((match) => match) // Simulates OR gate
+            break;
+        case "xor":
+            return matches.some((match) => match) && !matches.every((match) => match) // Simulates XOR gate
+            break;
+        case "nor":
+            return !matches.some((match) => match) // Simulates NOR gate
+            break;
+        case "xnor":
+            return matches.every( (val, i, arr) => val === arr[0] ) // Simulates NOR gate
+            break;
+        case "and":
+            return matches.every((match) => match) // Simulates AND gate
+            break;
+        case "nand":
+            return !matches.every((match) => match); // Simulates NAND gate
+            break;
+    }
+    return false;
+
+}
+
+function reloadTabAfterTime(patterns, matchMode, time, dependsOnStorage) {
+    chrome.tabs.query({}, function (tabs){
+        chrome.storage.sync.get([dependsOnStorage], function (response) {
+            if (!response[dependsOnStorage]) {
+                return;
+            }
+            for (tab of tabs) {
+                if (isURLMatch(patterns, matchMode, tab.url) && pendingRefresh.indexOf(tab.id) == -1) { // check if tab url matched patterns and that we aren't already refreshing this tab
+                    console.log(pendingRefresh)
+                    pendingRefresh.push(tab.id)
+                    setTimeout(function (tab) {
+                        chrome.storage.sync.get([dependsOnStorage], function (response) {
+                            if (!response[dependsOnStorage]) {
+                                return;
+                            }
+                            console.log(tab.url)
+                            if (!isURLMatch(patterns, matchMode, tab.url)) { // if url has changed to something else
+                                pendingRefresh.splice(pendingRefresh.indexOf(tab.id),1); // remove from pending
+                                return //stop
+                            } 
+                            chrome.tabs.update(tab.id, {url: tab.url});
+                            pendingRefresh.splice(pendingRefresh.indexOf(tab.id),1);
+                            reloadTabAfterTime(patterns, matchMode, time, dependsOnStorage);
+                        })
+                    }, time, tab)
+                }
+            }
+        })
+    })
+}
 
 function purgeTabs(patterns, matchMode, dependsOnStorage) { // Remove all tabs with a url pattern (regex) 
     // Modes include (or, xor, nor, xnor, and, nand)
@@ -85,18 +158,16 @@ chrome.runtime.onInstalled.addListener( // When the extension is first run
             }
             chrome.storage.sync.set(storage)
 
-            
+            chrome.tabs.onUpdated.addListener( // When tabs update
+                function () {
+                    purgeTabs(completeZoomMeetingLinkPatterns, "or", "closeZoomSuccessTabs"); 
+                    // Remove all tabs that fit *any* of the defined "completeZoomMeetingLinkPatterns" regexes, 
+                    // if storage value "closeZoomSuccessTabs" evaluates to true
 
-            if (response.closeZoomSuccessTabs) {
-                chrome.tabs.onUpdated.addListener( // When tabs update
-                    function () {
-                        purgeTabs(completeZoomMeetingLinkPatterns, "or", "closeZoomSuccessTabs"); 
-                        // Remove all tabs that fit *any* of the defined "completeZoomMeetingLinkPatterns" regexes, 
-                        // if storage value "closeZoomSuccessTabs" evaluates to true
-                    }              
+                    reloadTabAfterTime(intranetURLPatterns, "or", 300000, "doAutoRefresh")
+                }              
 
-                )
-            } 
+            )
         })
         chrome.storage.local.get(Object.keys(localStorageDefaults), function (response) {
             storage = {}
