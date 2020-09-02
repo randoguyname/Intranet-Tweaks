@@ -21,7 +21,8 @@ var localStorageDefaults = { // Rely on these being two-element arrays, in the f
 
 var completeZoomMeetingLinkPatterns = [
     /https:\/\/cgsvic.zoom.us\/j\/\d*.*#success/g, 
-    /https:\/\/cgsvic.zoom.us\/postattendee.*/g
+    /https:\/\/cgsvic.zoom.us\/postattendee.*/g,
+    /https:\/\/cgsvic.zoom.us\/.*success.*/g
 ]
 
 var intranetURLPatterns = [
@@ -65,38 +66,7 @@ function isURLMatch(patterns, matchMode, url) {
 
 }
 
-function reloadTabAfterTime(patterns, matchMode, time, dependsOnStorage) {
-    chrome.tabs.query({}, function (tabs){
-        chrome.storage.sync.get([dependsOnStorage], function (response) {
-            if (!response[dependsOnStorage]) {
-                return;
-            }
-            for (tab of tabs) {
-                if (isURLMatch(patterns, matchMode, tab.url) && pendingRefresh.indexOf(tab.id) == -1) { // check if tab url matched patterns and that we aren't already refreshing this tab
-                    console.log(pendingRefresh)
-                    pendingRefresh.push(tab.id)
-                    setTimeout(function (tab) {
-                        chrome.storage.sync.get([dependsOnStorage], function (response) {
-                            if (!response[dependsOnStorage]) {
-                                return;
-                            }
-                            console.log(tab.url)
-                            if (!isURLMatch(patterns, matchMode, tab.url)) { // if url has changed to something else
-                                pendingRefresh.splice(pendingRefresh.indexOf(tab.id),1); // remove from pending
-                                return //stop
-                            } 
-                            chrome.tabs.update(tab.id, {url: tab.url});
-                            pendingRefresh.splice(pendingRefresh.indexOf(tab.id),1);
-                            reloadTabAfterTime(patterns, matchMode, time, dependsOnStorage);
-                        })
-                    }, time, tab)
-                }
-            }
-        })
-    })
-}
-
-function purgeTabs(patterns, matchMode, dependsOnStorage) { // Remove all tabs with a url pattern (regex) 
+function iterTabs(patterns, matchMode, dependsOnStorage, callback) { // Calls back for all tabs with a url pattern (regex) 
     // Modes include (or, xor, nor, xnor, and, nand)
     chrome.tabs.query({}, function (tabs){
         chrome.storage.sync.get([dependsOnStorage], function (response) {
@@ -105,40 +75,8 @@ function purgeTabs(patterns, matchMode, dependsOnStorage) { // Remove all tabs w
             }
 
             for (tab of tabs) {
-                matches = [];
-                isMatch = false;
-                for (pattern of patterns) {
-                    if (pattern.test(tab.url)) {
-                        matches.push(1);
-                    }
-                    else {
-                        matches.push(0);
-                    }
-                }
-                switch (matchMode) {
-                    case "or":
-                        isMatch = matches.some((match) => match) // Simulates OR gate
-                        break;
-                    case "xor":
-                        isMatch = matches.some((match) => match) && !matches.every((match) => match) // Simulates XOR gate
-                        break;
-                    case "nor":
-                        isMatch = !matches.some((match) => match) // Simulates NOR gate
-                        break;
-                    case "xnor":
-                        isMatch = matches.every( (val, i, arr) => val === arr[0] ) // Simulates NOR gate
-                        break;
-                    case "and":
-                        isMatch = matches.every((match) => match) // Simulates AND gate
-                        break;
-                    case "nand":
-                        isMatch = !matches.every((match) => match); // Simulates NAND gate
-                        break;
-                }
-                if (isMatch) { // check if tab url matched patterns
-                    chrome.tabs.remove(tab.id, function() { // then remove it
-                        if (chrome.runtime.lastError) { } // if an error occurs, do nothing
-                    }); 
+                if (isURLMatch(patterns, matchMode, tab.url)) { // check if tab url matched patterns
+                    callback(tab) // run callback
                     
                 }
             }
@@ -151,44 +89,36 @@ function purgeTabs(patterns, matchMode, dependsOnStorage) { // Remove all tabs w
 
 chrome.runtime.onInstalled.addListener( // When the extension is first run
     function (details) {
+        // Set presets for enabled features, sync and local
         chrome.storage.sync.get(Object.keys(syncStorageDefaults), function (response) {
             storage = {}
-            for ([storageKey, def] of Object.entries(syncStorageDefaults)) { // Set presets for settings
+            for ([storageKey, def] of Object.entries(syncStorageDefaults)) {
                 storage[storageKey] = (((value = response[storageKey]) != undefined) ? value : def)
             }
             chrome.storage.sync.set(storage)
-
-            chrome.tabs.onUpdated.addListener( // When tabs update
-                function () {
-                    purgeTabs(completeZoomMeetingLinkPatterns, "or", "closeZoomSuccessTabs"); 
-                    // Remove all tabs that fit *any* of the defined "completeZoomMeetingLinkPatterns" regexes, 
-                    // if storage value "closeZoomSuccessTabs" evaluates to true
-
-                    reloadTabAfterTime(intranetURLPatterns, "or", 300000, "doAutoRefresh")
-                }              
-
-            )
         })
         chrome.storage.local.get(Object.keys(localStorageDefaults), function (response) {
             storage = {}
-            for ([storageKey, def] of Object.entries(localStorageDefaults)) { // Set presets for settings
+            for ([storageKey, def] of Object.entries(localStorageDefaults)) {
                 storage[storageKey] = (((value = response[storageKey]) != undefined) ? value : def)
             }
             chrome.storage.local.set(storage)
-
-            
-
-            if (response.closeZoomSuccessTabs) {
-                chrome.tabs.onUpdated.addListener( // When tabs update
-                    function () {
-                        purgeTabs(completeZoomMeetingLinkPatterns, "or", "closeZoomSuccessTabs"); 
-                        // Remove all tabs that fit *any* of the defined "completeZoomMeetingLinkPatterns" regexes, 
-                        // if storage value "closeZoomSuccessTabs" evaluates to true
-                    }              
-
-                )
-            } 
         })
+
+        // Add timers
+        setInterval( function () { // Every 100 ms (more consistent results than event listeners)
+            iterTabs(completeZoomMeetingLinkPatterns, "or", "closeZoomSuccessTabs", function (tab) { // for all tabs that are complete zoom meetings
+                chrome.tabs.remove(tab.id, function() { // remove them
+                    if (chrome.runtime.lastError) { } // if an error occurs, do nothing
+                });
+            })
+        }, 100)
+
+        setInterval( function () { // Every 5 minutes
+            iterTabs(intranetURLPatterns, "or", "doAutoRefreshe", function (tab) { // for all tabs that are the intranet
+                chrome.tabs.update(tab.id, {url: tab.url}); // refresh the tab
+            })
+        }, 300000)
         
     }
 )
@@ -219,7 +149,11 @@ chrome.runtime.onMessage.addListener(
 chrome.runtime.onMessage.addListener(
     function (request, sender, sendResponse) {
         if (request.contentScriptQuery == "purgeZoomTabs") {  // When triggered to remove tabs
-            purgeTabs(completeZoomMeetingLinkPatterns, "or", "closeZoomSuccessTabs");
+            iterTabs(completeZoomMeetingLinkPatterns, "or", "closeZoomSuccessTabs", function (tab) { // for all tabs that are complete zoom meetings
+                chrome.tabs.remove(tab.id, function() { // remove them
+                    if (chrome.runtime.lastError) { } // if an error occurs, do nothing
+                });
+            })
             return true;  // Will respond asynchronously.
         }
     });

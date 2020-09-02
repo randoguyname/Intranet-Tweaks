@@ -19,6 +19,43 @@ var highlightColors = [
 
 // Functions
 
+function tetxArrayFromTable (table, ignoreEmpty=true, startAt, endAt, inclusive=false) {
+    tableArray = [];
+    going = false
+    if (startAt == undefined) {
+        going = true
+    }
+
+    for (row of table.rows) {
+        rowArray = [];
+        for (cell of row.cells) {
+            if (inclusive && cell.innerText==startAt) {
+                going = true
+            }
+            if (!inclusive && cell.innerText==endAt) {
+                going = false
+            }
+            if (!going) {
+                continue
+            }
+            if (ignoreEmpty && cell.innerText.replace(/[^\x21-\x7E]/g, '') == "") {
+                continue;
+            }
+
+            rowArray.push(cell.innerText)
+
+            if (!inclusive && cell.innerText==startAt) {
+                going = true
+            }
+            if (inclusive && cell.innerText==endAt) {
+                going = false
+            }
+
+        }
+        tableArray.push(rowArray);
+    }
+}
+
 function getMinutesFromTime(time) {
     if ((time.endsWith("AM") && !time.startsWith("12")) 
             || (time.startsWith("12") && time.endsWith("PM"))) { // if the time is AM (or 12 PM)
@@ -118,10 +155,11 @@ function waitForElement(doc, querySelector, timeout=0){
     return new Promise((resolve, reject)=>{
         const timer = setInterval(()=>{
             const now = new Date().getTime();
-            if(doc.querySelector(querySelector)){
+            if (doc.querySelector(querySelector)){
                 clearInterval(timer);
                 resolve();
-            }else if(timeout && now - startTime >= timeout){
+            }
+            else if (timeout && now - startTime >= timeout){
                 clearInterval(timer);
                 reject();
             }
