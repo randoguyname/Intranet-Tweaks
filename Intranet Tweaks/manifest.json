@@ -3,7 +3,7 @@
   
     "name": "Intranet Tweaks",
     "description": "Fixes small details in the CGS intranet",
-    "version": "1.7.1",
+    "version": "1.7.2",
   
     "browser_action": {
         "default_popup": "popup/featureSelect.html",
@@ -17,12 +17,13 @@
         {
           "matches": ["https://intranet.cgs.vic.edu.au/Portal/", "https://intranet.cgs.vic.edu.au/CurriculumPortal/"],
           "exclude_matches": ["https://intranet.cgs.vic.edu.au/CurriculumPortal/\\?*"],
-          "js": ["contentScript.js"],
+          "js": ["arrayFromTable.js", "contentScript.js"],
           "all_frames":true
         }
     ],
     "background": {
         "scripts": [
+            "arrayFromTable.js",
             "background.js"
         ],
         "persistent": false

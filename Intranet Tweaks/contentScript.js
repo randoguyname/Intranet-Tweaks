@@ -19,43 +19,6 @@ var highlightColors = [
 
 // Functions
 
-function tetxArrayFromTable (table, ignoreEmpty=true, startAt, endAt, inclusive=false) {
-    tableArray = [];
-    going = false
-    if (startAt == undefined) {
-        going = true
-    }
-
-    for (row of table.rows) {
-        rowArray = [];
-        for (cell of row.cells) {
-            if (inclusive && cell.innerText==startAt) {
-                going = true
-            }
-            if (!inclusive && cell.innerText==endAt) {
-                going = false
-            }
-            if (!going) {
-                continue
-            }
-            if (ignoreEmpty && cell.innerText.replace(/[^\x21-\x7E]/g, '') == "") {
-                continue;
-            }
-
-            rowArray.push(cell.innerText)
-
-            if (!inclusive && cell.innerText==startAt) {
-                going = true
-            }
-            if (inclusive && cell.innerText==endAt) {
-                going = false
-            }
-
-        }
-        tableArray.push(rowArray);
-    }
-}
-
 function getMinutesFromTime(time) {
     if ((time.endsWith("AM") && !time.startsWith("12")) 
             || (time.startsWith("12") && time.endsWith("PM"))) { // if the time is AM (or 12 PM)
@@ -94,7 +57,7 @@ function sortTable(table) { // Sort table by time
 }
 
 function parseDayIndex(text) {
-    if (text.length < 3) {
+    if (text.length < 5) {
         return;
     }
     days = { // Turn days to numbers
@@ -135,12 +98,14 @@ function parsePeriodIndex(text, doSeperateTimetableBreaks=false) {
             return [7, 0];
         }
     }
+    return false
 }
 
 function highlightMusicCells(timetable, musicLessons, backgroundColor) {
     musicLessonIds = ["mus", "mub", "mut"] // Possible text "id"s of lessons that show up on both the regular and music timetable
 
     for (musicLesson of musicLessons) { // Iterate all music lessons
+        console.log(musicLesson)
         timetableLessonCell = timetable.rows[musicLesson[0]].cells[musicLesson[1]]; // Cell for lesson marked on timetable
         timetableLesson = timetableLessonCell.innerText.split('-')[0] // Gets the text "id" for the lesson
 
@@ -214,31 +179,20 @@ function highlightMusicLessons() {
                 parser = new DOMParser(); // Initialise a DOM parser
                 musicDocument = parser.parseFromString(html, "text/html"); // Turn HTML text into DOM Document
 
-                musicLessonsRows = musicDocument.getElementsByTagName("table")[2].rows[1].cells[0].children[1].rows; // Locate the main part of the music timetable, that contains the lesson times
+                musicLessonsTable = musicDocument.getElementsByTagName("table")[2].rows[1].cells[0].children[1]; // Locate the main part of the music timetable, that contains the lesson times
 
-                musicLessons = []; // All music lessons on your music timetable
-                atLessons = false; // If at the point in the document when lessons occur
-                parsingDay = [1]; // The day of the lesson, ie. 1=Monday, 2=Tuesday, etc.
-                for (lesson of musicLessonsRows) {
-                    if (atLessons) { // If passed point of music lessons
-                        if (dayIndex = parseDayIndex(lesson.innerText)) {
-                            parsingDay = dayIndex;
-                        }
-                        else if (periodIndex = parsePeriodIndex(lesson.innerText, response.doSeperateTimetableBreaks)) {
-                            if (Array.isArray(periodIndex)) {
-                                musicLessons.push([periodIndex[0], 0]);
-                                musicLessons.push([periodIndex[0], 1]);
-                            }
-                            else {
-                                musicLessons.push([periodIndex, parsingDay]);
-                            }
-                            
-                        }
+                parsingDay = 0;
+                musicLessons = [];
+                for (lesson of stringArray1dFromTable(musicLessonsTable, true, "My Timetable")) {
+                    if ((day = parseDayIndex(lesson)) != undefined) { // if a day can be found
+                        parsingDay = day;
                     }
-                    if (lesson.innerText.startsWith("My Timetable")) { // If at point of music lessons
-                        atLessons = true; // Allow the rest of the code to run
+
+                    else if ((period = parsePeriodIndex(lesson, response.doSeperateTimetableBreaks))) { // if a period number can be found
+                        musicLessons.push([period, parsingDay])
                     }
                 }
+                console.log(musicLessons)
                 
                 timetable = document.getElementsByTagName("table")[3].tBodies[0] // Get the timetable
                 

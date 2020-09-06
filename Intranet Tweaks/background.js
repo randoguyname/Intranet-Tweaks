@@ -22,7 +22,7 @@ var localStorageDefaults = { // Rely on these being two-element arrays, in the f
 var completeZoomMeetingLinkPatterns = [
     /https:\/\/cgsvic.zoom.us\/j\/\d*.*#success/g, 
     /https:\/\/cgsvic.zoom.us\/postattendee.*/g,
-    /https:\/\/cgsvic.zoom.us\/.*success.*/g
+    /https:\/\/cgsvic.zoom.us\/.*status=success.*/g
 ]
 
 var intranetURLPatterns = [
@@ -104,7 +104,25 @@ chrome.runtime.onInstalled.addListener( // When the extension is first run
             }
             chrome.storage.local.set(storage)
         })
+        setInterval( function () { // Every 100 ms (more consistent results than event listeners)
+            iterTabs(completeZoomMeetingLinkPatterns, "or", "closeZoomSuccessTabs", function (tab) { // for all tabs that are complete zoom meetings
+                chrome.tabs.remove(tab.id, function() { // remove them
+                    if (chrome.runtime.lastError) { } // if an error occurs, do nothing
+                });
+            })
+        }, 100)
 
+        setInterval( function () { // Every 5 minutes
+            iterTabs(intranetURLPatterns, "or", "doAutoRefreshe", function (tab) { // for all tabs that are the intranet
+                chrome.tabs.update(tab.id, {url: tab.url}); // refresh the tab
+                console.log("refresh")
+            })
+        }, 300000)
+    }
+)
+
+chrome.runtime.onStartup.addListener( // When chrome opens
+    function () {
         // Add timers
         setInterval( function () { // Every 100 ms (more consistent results than event listeners)
             iterTabs(completeZoomMeetingLinkPatterns, "or", "closeZoomSuccessTabs", function (tab) { // for all tabs that are complete zoom meetings
@@ -119,7 +137,6 @@ chrome.runtime.onInstalled.addListener( // When the extension is first run
                 chrome.tabs.update(tab.id, {url: tab.url}); // refresh the tab
             })
         }, 300000)
-        
     }
 )
 
@@ -140,8 +157,7 @@ chrome.runtime.onMessage.addListener(
       if (request.contentScriptQuery == "queryTimetableMusic") { // When triggered to get Music Timetable
         var url = "https://intranet.cgs.vic.edu.au/CurriculumPortal/?p=14"; // create URL
         fetch(url) // get URL response
-            .then(response => response.text()) 
-            .then(text => sendResponse(text)) // send it back to the contentScript
+            .then(response => sendResponse(response.text())) // send it back to the contentScript
         return true;  // Will respond asynchronously.
         }
     });
