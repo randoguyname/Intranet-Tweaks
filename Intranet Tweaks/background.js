@@ -30,6 +30,11 @@ var intranetURLPatterns = [
     /https:\/\/intranet.cgs.vic.edu.au\/CurriculumPortal\/.*/g
 ]
 
+var intranetURLPatterns = [
+    /https:\/\/intranet.cgs.vic.edu.au\/Portal\/.*/g, 
+    /https:\/\/intranet.cgs.vic.edu.au\/CurriculumPortal\/.*/g
+]
+
 // Functions
 
 function isURLMatch(patterns, matchMode, url) {
@@ -66,7 +71,42 @@ function isURLMatch(patterns, matchMode, url) {
 
 }
 
+<<<<<<< Updated upstream
 function iterTabs(patterns, matchMode, dependsOnStorage, callback) { // Calls back for all tabs with a url pattern (regex) 
+=======
+function reloadTabAfterTime(patterns, matchMode, time, dependsOnStorage) {
+    chrome.tabs.query({}, function (tabs){
+        chrome.storage.sync.get([dependsOnStorage], function (response) {
+            if (!response[dependsOnStorage]) {
+                return;
+            }
+            for (tab of tabs) {
+                if (isURLMatch(patterns, matchMode, tab.url) && pendingRefresh.indexOf(tab.id) == -1) { // check if tab url matched patterns and that we aren't already refreshing this tab
+                    console.log(pendingRefresh)
+                    pendingRefresh.push(tab.id)
+                    setTimeout(function (tab) {
+                        chrome.storage.sync.get([dependsOnStorage], function (response) {
+                            if (!response[dependsOnStorage]) {
+                                return;
+                            }
+                            console.log(tab.url)
+                            if (!isURLMatch(patterns, matchMode, tab.url)) { // if url has changed to something else
+                                pendingRefresh.splice(pendingRefresh.indexOf(tab.id),1); // remove from pending
+                                return //stop
+                            } 
+                            chrome.tabs.update(tab.id, {url: tab.url});
+                            pendingRefresh.splice(pendingRefresh.indexOf(tab.id),1);
+                            reloadTabAfterTime(patterns, matchMode, time, dependsOnStorage);
+                        })
+                    }, time, tab)
+                }
+            }
+        })
+    })
+}
+
+function purgeTabs(patterns, matchMode, dependsOnStorage) { // Remove all tabs with a url pattern (regex) 
+>>>>>>> Stashed changes
     // Modes include (or, xor, nor, xnor, and, nand)
     chrome.tabs.query({}, function (tabs){
         chrome.storage.sync.get([dependsOnStorage], function (response) {
@@ -96,6 +136,20 @@ chrome.runtime.onInstalled.addListener( // When the extension is first run
                 storage[storageKey] = (((value = response[storageKey]) != undefined) ? value : def)
             }
             chrome.storage.sync.set(storage)
+<<<<<<< Updated upstream
+=======
+
+            chrome.tabs.onUpdated.addListener( // When tabs update
+                function () {
+                    purgeTabs(completeZoomMeetingLinkPatterns, "or", "closeZoomSuccessTabs"); 
+                    // Remove all tabs that fit *any* of the defined "completeZoomMeetingLinkPatterns" regexes, 
+                    // if storage value "closeZoomSuccessTabs" evaluates to true
+
+                    reloadTabAfterTime(intranetURLPatterns, "or", 300000, "doAutoRefresh")
+                }              
+
+            )
+>>>>>>> Stashed changes
         })
         chrome.storage.local.get(Object.keys(localStorageDefaults), function (response) {
             storage = {}

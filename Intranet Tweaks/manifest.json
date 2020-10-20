@@ -3,7 +3,11 @@
   
     "name": "Intranet Tweaks",
     "description": "Fixes small details in the CGS intranet",
+<<<<<<< Updated upstream
     "version": "1.7.2",
+=======
+    "version": "1.7",
+>>>>>>> Stashed changes
   
     "browser_action": {
         "default_popup": "popup/featureSelect.html",
